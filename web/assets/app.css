@@ -1,0 +1,38 @@
+/* Page styles on top of portfolio-kit: layout only, every colour is a kit token. */
+.ra-intro { margin-block: var(--space-6) 0; }
+.ra-lede { max-width: 72ch; color: var(--muted); font-size: var(--fs-lg); }
+.ra-links { margin-block-start: var(--space-4); }
+.ra-section { margin-block-start: var(--space-7); }
+.ra-section > h2 { margin-block-end: var(--space-3); }
+.ra-note { max-width: 80ch; color: var(--muted); margin-block-end: var(--space-4); }
+.pf-grid > * { min-width: 0; }
+.pf-card > p { margin-block: var(--space-2) 0; }
+/* The hidden texts in the ranking pills are absolutely positioned; without a positioned wrap they escape its
+   scroll box and widen the page at 390 px. */
+.pf-table-wrap { position: relative; }
+
+.ra-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: var(--space-4); margin: 0; }
+.ra-facts dt { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.ra-facts dd { margin: var(--space-1) 0 0; overflow-wrap: anywhere; }
+.ra-change { margin-block: var(--space-2); }
+
+.ra-preview { margin: var(--space-4) 0 0; }
+.ra-preview img { display: block; width: 100%; height: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+
+.ra-diagram { overflow-x: auto; padding: var(--space-4); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.ra-diagram svg { display: block; width: 100%; min-width: 760px; height: auto; }
+.ra-box { fill: var(--surface-2); stroke: var(--border); stroke-width: 1.5; }
+.ra-box--side { stroke: var(--muted); stroke-dasharray: 5 4; }
+.ra-box--ci { fill: var(--surface); stroke: var(--muted); }
+.ra-label { fill: var(--text); font: 600 13px var(--font-text); }
+.ra-sub { fill: var(--muted); font: 11px var(--font-mono); }
+.ra-group { fill: var(--muted); font: 600 12px var(--font-mono); letter-spacing: .06em; }
+.ra-edge { fill: none; stroke: var(--muted); stroke-width: 1.5; }
+.ra-edge--side { stroke-dasharray: 5 4; }
+.ra-head { fill: var(--muted); }
+.ra-steps { max-width: 80ch; padding-inline-start: 1.4em; margin-block-start: var(--space-4); }
+.ra-steps li + li { margin-block-start: var(--space-2); }
+
+pre { max-width: 100%; margin: var(--space-3) 0 0; padding: var(--space-3) var(--space-4); overflow-x: auto; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: var(--fs-sm); line-height: 1.6; }
+code { font-family: var(--font-mono); }
+pre code { white-space: pre; }

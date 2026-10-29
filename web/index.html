@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cedarline weekly report · Excel reporting automation</title>
+<meta name="description" content="Python CLI that turns twelve weekly branch workbooks into one checked, formatted Excel report, built and e-mailed on a schedule.">
+<link rel="stylesheet" href="kit/fonts/fonts.css">
+<link rel="stylesheet" href="kit/tokens.css">
+<link rel="stylesheet" href="kit/base.css">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<script src="kit/theme-boot.js"></script>
+</head>
+<body>
+<div class="pf-page">
+  <header class="pf-header">
+    <a class="pf-brand" href="./"><span class="pf-brand__mark" aria-hidden="true">HH</span>Excel reporting automation</a>
+    <nav class="pf-header__nav" aria-label="Sections">
+      <a href="#latest">Latest run</a><a href="#previews">Sheets</a><a href="#how">How it works</a><a href="#schedule">Schedule</a><a href="#local">Run it locally</a>
+    </nav>
+    <div class="pf-header__tools"><span id="theme"></span></div>
+  </header>
+
+  <main id="main" data-state="loading">
+    <section class="ra-intro" aria-labelledby="page-title">
+      <h1 id="page-title">Cedarline weekly report</h1>
+      <p class="ra-lede">Python CLI that turns twelve weekly branch workbooks into one checked, formatted Excel report, built and e-mailed on a schedule. Every Monday a GitHub Actions run generates a fresh week of branch files for the fictional bakery chain Cedarline Bakeries, builds last week's report and publishes it here.</p>
+      <div class="pf-row ra-links">
+        <a class="pf-btn pf-btn--ghost pf-btn--sm" href="https://github.com/HARISPAARTAN/excel-reporting-automation">Repository</a>
+        <a class="pf-btn pf-btn--primary pf-btn--sm" id="link-xlsx" href="latest/" download hidden>Latest workbook (.xlsx)</a>
+        <a class="pf-btn pf-btn--ghost pf-btn--sm" id="link-pdf" href="latest/preview/report-preview.pdf" hidden>Preview PDF</a>
+        <a class="pf-btn pf-btn--ghost pf-btn--sm" id="link-eml" href="latest/" download hidden>E-mail preview (.eml)</a>
+      </div>
+    </section>
+
+    <section class="ra-section" id="latest" aria-labelledby="latest-title">
+      <h2 id="latest-title">Latest run</h2>
+      <div class="pf-empty" id="empty" hidden>
+        <strong id="empty-title">No weekly run yet</strong>
+        <span id="empty-text">The weekly GitHub Actions run publishes the report here on Monday morning. Until then you can build the 2025-W38 demo report yourself, see <a href="#local">Run it locally</a>.</span>
+      </div>
+      <div class="pf-card" id="run-card" hidden>
+        <dl class="ra-facts">
+          <div><dt>Period</dt><dd id="fact-period"></dd></div>
+          <div><dt>Generated at</dt><dd id="fact-generated"></dd></div>
+          <div><dt>Tool</dt><dd id="fact-tool"></dd></div>
+          <div><dt>Branches reporting</dt><dd id="fact-branches"></dd></div>
+          <div><dt>Findings</dt><dd id="fact-findings"></dd></div>
+          <div><dt>Run</dt><dd id="fact-run"></dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="ra-section" data-needs-run hidden aria-labelledby="kpis-title">
+      <h2 id="kpis-title">Key figures</h2>
+      <p class="ra-note">The chain this week against last week; the pill shows the week-on-week change in green when it is favourable and in red when it is not.</p>
+      <div class="pf-grid" id="kpis" style="--min:200px"></div>
+    </section>
+
+    <section class="ra-section" data-needs-run hidden aria-labelledby="ranking-title">
+      <h2 id="ranking-title">Branch ranking</h2>
+      <p class="ra-note" id="ranking-note"></p>
+      <div id="ranking"></div>
+    </section>
+
+    <section class="ra-section" data-needs-run hidden aria-labelledby="findings-title">
+      <h2 id="findings-title">Findings</h2>
+      <p class="ra-note">What the template check and the resolver noticed in the branch files. Warnings leave the file in the report; errors exclude it.</p>
+      <div id="findings"></div>
+    </section>
+
+    <section class="ra-section" id="previews" data-needs-run hidden aria-labelledby="previews-title">
+      <h2 id="previews-title">The five sheets</h2>
+      <p class="ra-note">Previews are LibreOffice renders of the workbook, made when the site is deployed; fonts and chart styling differ slightly from Excel. The Data sheet shows its first 40 rows.</p>
+      <div class="pf-tabs" role="tablist" aria-label="Sheets of the workbook" id="sheet-tabs">
+        <button type="button" class="pf-tab" role="tab" id="tab-summary" aria-controls="panel-summary" aria-selected="true">Summary</button>
+        <button type="button" class="pf-tab" role="tab" id="tab-branches" aria-controls="panel-branches" aria-selected="false" tabindex="-1">Branches</button>
+        <button type="button" class="pf-tab" role="tab" id="tab-products" aria-controls="panel-products" aria-selected="false" tabindex="-1">Products</button>
+        <button type="button" class="pf-tab" role="tab" id="tab-data" aria-controls="panel-data" aria-selected="false" tabindex="-1">Data</button>
+        <button type="button" class="pf-tab" role="tab" id="tab-run-info" aria-controls="panel-run-info" aria-selected="false" tabindex="-1">Run info</button>
+      </div>
+      <div class="pf-tabpanel" role="tabpanel" id="panel-summary" aria-labelledby="tab-summary" tabindex="0"><figure class="ra-preview"><img data-sheet="summary" alt=""></figure></div>
+      <div class="pf-tabpanel" role="tabpanel" id="panel-branches" aria-labelledby="tab-branches" tabindex="0" hidden><figure class="ra-preview"><img data-sheet="branches" alt=""></figure></div>
+      <div class="pf-tabpanel" role="tabpanel" id="panel-products" aria-labelledby="tab-products" tabindex="0" hidden><figure class="ra-preview"><img data-sheet="products" alt=""></figure></div>
+      <div class="pf-tabpanel" role="tabpanel" id="panel-data" aria-labelledby="tab-data" tabindex="0" hidden><figure class="ra-preview"><img data-sheet="data" alt=""></figure></div>
+      <div class="pf-tabpanel" role="tabpanel" id="panel-run-info" aria-labelledby="tab-run-info" tabindex="0" hidden><figure class="ra-preview"><img data-sheet="run-info" alt=""></figure></div>
+    </section>
+
+    <section class="ra-section" id="how" aria-labelledby="how-title">
+      <h2 id="how-title">How it works</h2>
+      <div class="ra-diagram" tabindex="0" role="region" aria-label="Architecture diagram; scrolls sideways on narrow screens">
+        <svg viewBox="0 0 960 316" role="img" aria-labelledby="arch-title arch-desc">
+          <title id="arch-title">How build-report works</title>
+          <desc id="arch-desc">From the input folder through discover, the template reader, the resolver and the long records to the metrics engine, the workbook writer, the reproducible save, the manifest, the notifier and the output folder; below, the GitHub Actions path from weekly-report.yml to the Pages site. The numbered list below the diagram describes the same steps.</desc>
+          <defs><marker id="ra-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path class="ra-head" d="M0 0L10 5L0 10z"/></marker></defs>
+          <rect class="ra-box ra-box--side" x="17" y="24" width="136" height="56" rx="8"/><text class="ra-label" x="85" y="49" text-anchor="middle">Generator</text><text class="ra-sub" x="85" y="67" text-anchor="middle">generate-fixtures</text>
+          <rect class="ra-box" x="175" y="24" width="136" height="56" rx="8"/><text class="ra-label" x="243" y="49" text-anchor="middle">Input folder</text><text class="ra-sub" x="243" y="67" text-anchor="middle">12 workbooks a week</text>
+          <rect class="ra-box" x="333" y="24" width="136" height="56" rx="8"/><text class="ra-label" x="401" y="49" text-anchor="middle">Discover</text><text class="ra-sub" x="401" y="67" text-anchor="middle">*.xlsx by name</text>
+          <rect class="ra-box" x="491" y="24" width="136" height="56" rx="8"/><text class="ra-label" x="559" y="49" text-anchor="middle">Template reader</text><text class="ra-sub" x="559" y="67" text-anchor="middle">per file, findings</text>
+          <rect class="ra-box" x="649" y="24" width="136" height="56" rx="8"/><text class="ra-label" x="717" y="49" text-anchor="middle">Resolver</text><text class="ra-sub" x="717" y="67" text-anchor="middle">weeks, duplicates</text>
+          <rect class="ra-box" x="807" y="24" width="136" height="56" rx="8"/><text class="ra-label" x="875" y="49" text-anchor="middle">Long records</text><text class="ra-sub" x="875" y="67" text-anchor="middle">one row per measure</text>
+          <line class="ra-edge ra-edge--side" x1="153" y1="52" x2="175" y2="52" marker-end="url(#ra-arrow)"/>
+          <line class="ra-edge" x1="311" y1="52" x2="333" y2="52" marker-end="url(#ra-arrow)"/>
+          <line class="ra-edge" x1="469" y1="52" x2="491" y2="52" marker-end="url(#ra-arrow)"/>
+          <line class="ra-edge" x1="627" y1="52" x2="649" y2="52" marker-end="url(#ra-arrow)"/>
+          <line class="ra-edge" x1="785" y1="52" x2="807" y2="52" marker-end="url(#ra-arrow)"/>
+          <path class="ra-edge" d="M875 80V104H85V128" marker-end="url(#ra-arrow)"/>
+          <rect class="ra-box" x="17" y="128" width="136" height="56" rx="8"/><text class="ra-label" x="85" y="153" text-anchor="middle">Metrics engine</text><text class="ra-sub" x="85" y="171" text-anchor="middle">report.yaml</text>
+          <rect class="ra-box" x="175" y="128" width="136" height="56" rx="8"/><text class="ra-label" x="243" y="153" text-anchor="middle">Workbook writer</text><text class="ra-sub" x="243" y="171" text-anchor="middle">five sheets, charts</text>
+          <rect class="ra-box" x="333" y="128" width="136" height="56" rx="8"/><text class="ra-label" x="401" y="153" text-anchor="middle">Reproducible save</text><text class="ra-sub" x="401" y="171" text-anchor="middle">SOURCE_DATE_EPOCH</text>
+          <rect class="ra-box" x="491" y="128" width="136" height="56" rx="8"/><text class="ra-label" x="559" y="153" text-anchor="middle">Manifest</text><text class="ra-sub" x="559" y="171" text-anchor="middle">always written</text>
+          <rect class="ra-box" x="649" y="128" width="136" height="56" rx="8"/><text class="ra-label" x="717" y="153" text-anchor="middle">Notifier</text><text class="ra-sub" x="717" y="171" text-anchor="middle">.eml or SMTP</text>
+          <rect class="ra-box" x="807" y="128" width="136" height="56" rx="8"/><text class="ra-label" x="875" y="153" text-anchor="middle">Output folder</text><text class="ra-sub" x="875" y="171" text-anchor="middle">xlsx, json, eml</text>
+          <line class="ra-edge" x1="153" y1="156" x2="175" y2="156" marker-end="url(#ra-arrow)"/>
+          <line class="ra-edge" x1="311" y1="156" x2="333" y2="156" marker-end="url(#ra-arrow)"/>
+          <line class="ra-edge" x1="469" y1="156" x2="491" y2="156" marker-end="url(#ra-arrow)"/>
+          <line class="ra-edge" x1="627" y1="156" x2="649" y2="156" marker-end="url(#ra-arrow)"/>
+          <line class="ra-edge" x1="785" y1="156" x2="807" y2="156" marker-end="url(#ra-arrow)"/>
+          <text class="ra-group" x="17" y="228">IN GITHUB ACTIONS, MONDAYS 06:00 UTC</text>
+          <rect class="ra-box ra-box--ci" x="17" y="240" width="136" height="56" rx="8"/><text class="ra-label" x="85" y="265" text-anchor="middle">weekly-report.yml</text><text class="ra-sub" x="85" y="283" text-anchor="middle">schedule, dispatch</text>
+          <rect class="ra-box ra-box--ci" x="175" y="240" width="136" height="56" rx="8"/><text class="ra-label" x="243" y="265" text-anchor="middle">build-report run</text><text class="ra-sub" x="243" y="283" text-anchor="middle">the steps above</text>
+          <rect class="ra-box ra-box--ci" x="333" y="240" width="136" height="56" rx="8"/><text class="ra-label" x="401" y="265" text-anchor="middle">web/latest/</text><text class="ra-sub" x="401" y="283" text-anchor="middle">bot commit</text>
+          <rect class="ra-box ra-box--ci" x="491" y="240" width="136" height="56" rx="8"/><text class="ra-label" x="559" y="265" text-anchor="middle">pages.yml</text><text class="ra-sub" x="559" y="283" text-anchor="middle">LibreOffice render</text>
+          <rect class="ra-box ra-box--ci" x="649" y="240" width="136" height="56" rx="8"/><text class="ra-label" x="717" y="265" text-anchor="middle">Pages site</text><text class="ra-sub" x="717" y="283" text-anchor="middle">this page</text>
+          <line class="ra-edge" x1="153" y1="268" x2="175" y2="268" marker-end="url(#ra-arrow)"/>
+          <line class="ra-edge" x1="311" y1="268" x2="333" y2="268" marker-end="url(#ra-arrow)"/>
+          <line class="ra-edge" x1="469" y1="268" x2="491" y2="268" marker-end="url(#ra-arrow)"/>
+          <line class="ra-edge" x1="627" y1="268" x2="649" y2="268" marker-end="url(#ra-arrow)"/>
+        </svg>
+      </div>
+      <ol class="ra-steps">
+        <li>Each branch saves one workbook per week into the input folder, named like <code>CL-03_2025-W38.xlsx</code>. In the demo the generator writes them, with six typical deviations.</li>
+        <li>Discover lists the workbooks by name. The template reader opens each one, finds the sheets and columns by name or alias and records findings instead of failing.</li>
+        <li>The resolver gives every file its week (the cover wins over the file name), keeps the later of two different copies, marks missing branches and keeps the eight weeks of the window.</li>
+        <li>The returns become one long table: one row per branch, week, category and measure.</li>
+        <li>The metrics engine evaluates the ten metrics of <code>report.yaml</code> for every branch, product group and the chain, with the week-on-week change and the branch ranking.</li>
+        <li>The workbook writer builds the five sheets with values, generated formulas in the total rows, three native charts and conditional formatting. The save is re-packed, so identical inputs give identical bytes.</li>
+        <li>The run writes the manifest (always), the workbook and, with <code>--notify</code>, the e-mail as an <code>.eml</code> file or through SMTP. Findings appear in the manifest, on the sheet Run info and in the e-mail.</li>
+        <li>In GitHub Actions, <code>weekly-report.yml</code> runs these steps every Monday, commits the outputs to <code>web/latest/</code> and calls <code>pages.yml</code>, which renders the previews with LibreOffice and deploys this page.</li>
+      </ol>
+    </section>
+
+    <section class="ra-section" id="schedule" aria-labelledby="schedule-title">
+      <h2 id="schedule-title">Schedule</h2>
+      <div class="pf-grid" style="--min:300px">
+        <div class="pf-card">
+          <h3 class="pf-card__title">GitHub Actions</h3>
+          <p><code>.github/workflows/weekly-report.yml</code> runs every Monday at 06:00 UTC and on demand. GitHub may start scheduled runs late when it is busy.</p>
+          <pre tabindex="0"><code>on:
+  schedule: [{cron: "0 6 * * 1"}]
+  workflow_dispatch: {inputs: {period: {default: last}}}</code></pre>
+        </div>
+        <div class="pf-card">
+          <h3 class="pf-card__title">Windows Task Scheduler</h3>
+          <p>Mondays at 07:00 local time, as the signed-in user, started late when the computer was off. Register the definition from the repository folder in PowerShell:</p>
+          <pre tabindex="0"><code>Register-ScheduledTask -TaskPath '\Cedarline\' -TaskName 'Weekly report' -Xml (Get-Content -Raw docs\scheduling\build-report-weekly.xml)</code></pre>
+        </div>
+        <div class="pf-card">
+          <h3 class="pf-card__title">cron</h3>
+          <p>On a Linux server whose clock runs on Dublin time, with the SMTP settings in an environment file:</p>
+          <pre tabindex="0"><code>0 7 * * 1  cd /opt/cedarline/build-report &amp;&amp; set -a &amp;&amp; . /etc/cedarline/build-report.env &amp;&amp; set +a &amp;&amp; /usr/local/bin/uv run build-report --log-file /var/log/cedarline/build-report.log run --period last --input /srv/cedarline/incoming --out /srv/cedarline/reports --notify smtp</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="ra-section" id="local" aria-labelledby="local-title">
+      <h2 id="local-title">Run it locally</h2>
+      <p>You need Python 3.11 or newer and uv. The repository contains the 96 demo workbooks for 2025-W31 to 2025-W38 with the six deviations of the demo profile.</p>
+      <pre tabindex="0"><code>git clone https://github.com/HARISPAARTAN/excel-reporting-automation.git
+cd excel-reporting-automation
+uv sync
+uv run build-report validate --input data/incoming --period 2025-W38
+uv run build-report run --period 2025-W38 --input data/incoming --out reports --notify dry-run
+uv run pytest</code></pre>
+      <p>The run writes <code>Cedarline_Weekly_Report_2025-W38.xlsx</code>, <code>.manifest.json</code> and <code>.eml</code> into <code>reports/</code> and exits with code 0 and six warnings; with <code>--strict</code> it exits with code 3 and writes no workbook. With <code>SOURCE_DATE_EPOCH=1758520800</code> every run gives the same bytes.</p>
+    </section>
+  </main>
+
+  <footer class="pf-footer">
+    <p>Rebuilt from memory as a demo. The original client's name and data are not used.</p>
+    <p>Cedarline Bakeries, its branches and every figure on this page are invented. <a href="https://github.com/HARISPAARTAN/excel-reporting-automation">Source on GitHub</a> · MIT licence</p>
+  </footer>
+</div>
+<script type="module" src="assets/app.js"></script>
+</body>
+</html>
