@@ -1,0 +1,45 @@
+version: 1
+client: {name: Cedarline Bakeries, city: Dublin, country: IE, currency: EUR}
+input: {file_pattern: '^(?P<branch>CL-\d{2})_(?P<week>\d{4}-W\d{2})(?:[ _-].*)?\.xlsx$'}
+template:
+  version: 3
+  cover:
+    sheet: {name: Cover, aliases: ["Cover*"]}
+    labels: {branch_code: Branch code, branch_name: Branch name, week: ISO week, transactions: Transactions,
+             submitted_at: Submitted at, submitted_by: Submitted by, template_version: Template version}
+  sales:
+    sheet: {name: Sales, aliases: ["Sales*", "Sales data"]}
+    key: {header: Product group, values: product_groups}
+    columns: {net_sales_eur: {header: Net sales EUR, type: money}, units_sold: {header: Units sold, type: count},
+              waste_units: {header: Waste units, type: count}, waste_eur: {header: Waste EUR, type: money}}
+  labour:
+    sheet: {name: Labour, aliases: ["Labour*", "Labor*"]}
+    key: {header: Role, values: roles}
+    columns: {labour_hours: {header: Hours, type: hours}, labour_cost_eur: {header: Cost EUR, type: money}}
+branches: [{code: CL-01, name: Alderbrook, format: Flagship}, {code: CL-02, name: Brackenford, format: High street},
+  {code: CL-03, name: Corravale, format: High street}, {code: CL-04, name: Dunmarren, format: Neighbourhood},
+  {code: CL-05, name: Elmshaw, format: Neighbourhood}, {code: CL-06, name: Fernhollow, format: Neighbourhood},
+  {code: CL-07, name: Glenvarra, format: Transit kiosk}, {code: CL-08, name: Hollinmoor, format: Neighbourhood},
+  {code: CL-09, name: Kilbrecan, format: High street}, {code: CL-10, name: Lisnaferry, format: Retail park},
+  {code: CL-11, name: Mosswick, format: Neighbourhood}, {code: CL-12, name: Rowanmere, format: Transit kiosk}]
+product_groups: [Bread, Viennoiserie, Cakes and Pastries, Savoury and Sandwiches, Hot Drinks, Cold Drinks and Grocery]
+roles: [Bakery, Counter, Supervisor]
+metrics:
+  revenue: {label: Revenue, expr: "sum(net_sales_eur)", format: eur, change: relative, better: higher}
+  transactions: {label: Transactions, expr: "sum(transactions)", format: count, change: relative, better: higher}
+  avg_basket: {label: Average basket, expr: "revenue / transactions", format: eur2, change: relative, better: higher}
+  units_sold: {label: Units sold, expr: "sum(units_sold)", format: count, change: relative, better: higher}
+  waste_eur: {label: Waste EUR, expr: "sum(waste_eur)", format: eur, change: relative, better: lower}
+  waste_pct: {label: Waste %, expr: "waste_eur / revenue", format: pct1, change: points, better: lower}
+  labour_hours: {label: Labour hours, expr: "sum(labour_hours)", format: hours, change: relative, better: neutral}
+  labour_cost: {label: Labour cost, expr: "sum(labour_cost_eur)", format: eur, change: relative, better: lower}
+  labour_pct: {label: Labour % of revenue, expr: "labour_cost / revenue", format: pct1, change: points, better: lower}
+  revenue_per_labour_hour: {label: Revenue per labour hour, expr: "revenue / labour_hours", format: eur2, change: relative, better: higher}
+summary_kpis: [revenue, transactions, avg_basket, waste_pct, labour_pct, revenue_per_labour_hour, labour_hours]
+ranking: {metric: revenue, order: desc}
+thresholds: [{metric: waste_pct, op: ">", value: 0.06, style: bad}, {metric: labour_pct, op: ">", value: 0.32, style: warn}]
+trend_weeks: 8
+strict: false
+output: {file_name: "Cedarline_Weekly_Report_{period}.xlsx"}
+notify: {from: {name: Cedarline Reporting, address: reporting@cedarline.example}, subject_prefix: Cedarline weekly report,
+         to: [head-office@cedarline.example, operations@cedarline.example], cc: [finance@cedarline.example]}
