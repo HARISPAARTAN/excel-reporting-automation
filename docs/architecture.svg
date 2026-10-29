@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 316" width="960" height="316" role="img" aria-labelledby="title desc">
+  <title id="title">How build-report works</title>
+  <desc id="desc">From the input folder through discover, the template reader, the resolver and the long records to the metrics engine, the workbook writer, the reproducible save, the manifest, the notifier and the output folder; below, the GitHub Actions path from weekly-report.yml to the Pages site.</desc>
+  <style>
+    .bg { fill: #0B0F14; }
+    .box { fill: #182130; stroke: #1F2A36; stroke-width: 1.5; }
+    .box-side { fill: #182130; stroke: #93A1B0; stroke-width: 1.5; stroke-dasharray: 5 4; }
+    .box-ci { fill: #121820; stroke: #93A1B0; stroke-width: 1.5; }
+    .label { fill: #E6EDF3; font: 600 13px "Segoe UI", "Inter", Arial, sans-serif; }
+    .sub { fill: #93A1B0; font: 11px Consolas, "JetBrains Mono", "DejaVu Sans Mono", monospace; }
+    .group { fill: #93A1B0; font: 600 12px Consolas, "JetBrains Mono", "DejaVu Sans Mono", monospace; letter-spacing: .06em; }
+    .edge { fill: none; stroke: #93A1B0; stroke-width: 1.5; }
+    .edge-side { fill: none; stroke: #93A1B0; stroke-width: 1.5; stroke-dasharray: 5 4; }
+    .head { fill: #93A1B0; }
+  </style>
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path class="head" d="M0 0L10 5L0 10z"/></marker></defs>
+  <rect class="bg" x="0" y="0" width="960" height="316"/>
+  <rect class="box-side" x="17" y="24" width="136" height="56" rx="8"/><text class="label" x="85" y="49" text-anchor="middle">Generator</text><text class="sub" x="85" y="67" text-anchor="middle">generate-fixtures</text>
+  <rect class="box" x="175" y="24" width="136" height="56" rx="8"/><text class="label" x="243" y="49" text-anchor="middle">Input folder</text><text class="sub" x="243" y="67" text-anchor="middle">12 workbooks a week</text>
+  <rect class="box" x="333" y="24" width="136" height="56" rx="8"/><text class="label" x="401" y="49" text-anchor="middle">Discover</text><text class="sub" x="401" y="67" text-anchor="middle">*.xlsx by name</text>
+  <rect class="box" x="491" y="24" width="136" height="56" rx="8"/><text class="label" x="559" y="49" text-anchor="middle">Template reader</text><text class="sub" x="559" y="67" text-anchor="middle">per file, findings</text>
+  <rect class="box" x="649" y="24" width="136" height="56" rx="8"/><text class="label" x="717" y="49" text-anchor="middle">Resolver</text><text class="sub" x="717" y="67" text-anchor="middle">weeks, duplicates</text>
+  <rect class="box" x="807" y="24" width="136" height="56" rx="8"/><text class="label" x="875" y="49" text-anchor="middle">Long records</text><text class="sub" x="875" y="67" text-anchor="middle">one row per measure</text>
+  <line class="edge-side" x1="153" y1="52" x2="175" y2="52" marker-end="url(#arrow)"/>
+  <line class="edge" x1="311" y1="52" x2="333" y2="52" marker-end="url(#arrow)"/>
+  <line class="edge" x1="469" y1="52" x2="491" y2="52" marker-end="url(#arrow)"/>
+  <line class="edge" x1="627" y1="52" x2="649" y2="52" marker-end="url(#arrow)"/>
+  <line class="edge" x1="785" y1="52" x2="807" y2="52" marker-end="url(#arrow)"/>
+  <path class="edge" d="M875 80V104H85V128" marker-end="url(#arrow)"/>
+  <rect class="box" x="17" y="128" width="136" height="56" rx="8"/><text class="label" x="85" y="153" text-anchor="middle">Metrics engine</text><text class="sub" x="85" y="171" text-anchor="middle">report.yaml</text>
+  <rect class="box" x="175" y="128" width="136" height="56" rx="8"/><text class="label" x="243" y="153" text-anchor="middle">Workbook writer</text><text class="sub" x="243" y="171" text-anchor="middle">five sheets, charts</text>
+  <rect class="box" x="333" y="128" width="136" height="56" rx="8"/><text class="label" x="401" y="153" text-anchor="middle">Reproducible save</text><text class="sub" x="401" y="171" text-anchor="middle">SOURCE_DATE_EPOCH</text>
+  <rect class="box" x="491" y="128" width="136" height="56" rx="8"/><text class="label" x="559" y="153" text-anchor="middle">Manifest</text><text class="sub" x="559" y="171" text-anchor="middle">always written</text>
+  <rect class="box" x="649" y="128" width="136" height="56" rx="8"/><text class="label" x="717" y="153" text-anchor="middle">Notifier</text><text class="sub" x="717" y="171" text-anchor="middle">.eml or SMTP</text>
+  <rect class="box" x="807" y="128" width="136" height="56" rx="8"/><text class="label" x="875" y="153" text-anchor="middle">Output folder</text><text class="sub" x="875" y="171" text-anchor="middle">xlsx, json, eml</text>
+  <line class="edge" x1="153" y1="156" x2="175" y2="156" marker-end="url(#arrow)"/>
+  <line class="edge" x1="311" y1="156" x2="333" y2="156" marker-end="url(#arrow)"/>
+  <line class="edge" x1="469" y1="156" x2="491" y2="156" marker-end="url(#arrow)"/>
+  <line class="edge" x1="627" y1="156" x2="649" y2="156" marker-end="url(#arrow)"/>
+  <line class="edge" x1="785" y1="156" x2="807" y2="156" marker-end="url(#arrow)"/>
+  <text class="group" x="17" y="228">IN GITHUB ACTIONS, MONDAYS 06:00 UTC</text>
+  <rect class="box-ci" x="17" y="240" width="136" height="56" rx="8"/><text class="label" x="85" y="265" text-anchor="middle">weekly-report.yml</text><text class="sub" x="85" y="283" text-anchor="middle">schedule, dispatch</text>
+  <rect class="box-ci" x="175" y="240" width="136" height="56" rx="8"/><text class="label" x="243" y="265" text-anchor="middle">build-report run</text><text class="sub" x="243" y="283" text-anchor="middle">the steps above</text>
+  <rect class="box-ci" x="333" y="240" width="136" height="56" rx="8"/><text class="label" x="401" y="265" text-anchor="middle">web/latest/</text><text class="sub" x="401" y="283" text-anchor="middle">bot commit</text>
+  <rect class="box-ci" x="491" y="240" width="136" height="56" rx="8"/><text class="label" x="559" y="265" text-anchor="middle">pages.yml</text><text class="sub" x="559" y="283" text-anchor="middle">LibreOffice render</text>
+  <rect class="box-ci" x="649" y="240" width="136" height="56" rx="8"/><text class="label" x="717" y="265" text-anchor="middle">Pages site</text><text class="sub" x="717" y="283" text-anchor="middle">the demo page</text>
+  <line class="edge" x1="153" y1="268" x2="175" y2="268" marker-end="url(#arrow)"/>
+  <line class="edge" x1="311" y1="268" x2="333" y2="268" marker-end="url(#arrow)"/>
+  <line class="edge" x1="469" y1="268" x2="491" y2="268" marker-end="url(#arrow)"/>
+  <line class="edge" x1="627" y1="268" x2="649" y2="268" marker-end="url(#arrow)"/>
+</svg>
