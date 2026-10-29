@@ -25,6 +25,12 @@ Der vollständige Auftrag mit Rollen und Abnahmekriterien steht (auf Englisch) i
 
 [harispaartan.github.io/excel-reporting-automation](https://harispaartan.github.io/excel-reporting-automation/) zeigt den jeweils neuesten Wochenbericht: die Kennzahlen mit der Veränderung zur Vorwoche, das Filialranking, die Befunde des Laufs, Vorschauen der fünf Blätter aus LibreOffice sowie Links zur Arbeitsmappe, zur E-Mail und zu einem PDF der Blätter. Die Daten sind erfunden und werden jede Woche neu erzeugt.
 
+![Die Demo-Seite mit dem neuesten Wochenbericht: Angaben zum Lauf, Kennzahlen, Filialranking und Befunde](docs/screenshots/pages.png)
+
+![Das Blatt Summary des Demo-Berichts 2025-W38, in CI mit LibreOffice gerendert](docs/screenshots/summary.png)
+
+Die übrigen Blätter des Demo-Berichts, auf dieselbe Weise gerendert: [Branches](docs/screenshots/branches.png), [Products](docs/screenshots/products.png), [Data](docs/screenshots/data.png) (die ersten 40 Zeilen) und [Run info](docs/screenshots/run-info.png).
+
 ## Funktionen
 
 - **Vorlagenprüfung mit Befunden.** Jede Arbeitsmappe wird gegen die Vorlage Version 3 geprüft. Umbenannte Blätter, zusätzliche Spalten, eine fehlende oder widersprüchliche Woche, doppelte Einsendungen und fehlende Filialen werden nach festen Regeln aufgelöst und als Befunde mit Code gemeldet; Dateien mit Fehlern werden ausgeschlossen, die übrigen verwendet. `--strict` stoppt bei jedem Befund.

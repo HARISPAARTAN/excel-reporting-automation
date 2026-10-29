@@ -25,6 +25,12 @@ The full brief, the roles and the acceptance criteria are in [docs/brief.md](doc
 
 [harispaartan.github.io/excel-reporting-automation](https://harispaartan.github.io/excel-reporting-automation/) shows the latest weekly report: the key figures with their week-on-week change, the branch ranking, the findings of the run, LibreOffice previews of the five sheets, and links to the workbook, the e-mail and a PDF of the sheets. The data is invented and regenerated every week.
 
+![The demo page with the latest weekly report: run card, key figures, branch ranking and findings](docs/screenshots/pages.png)
+
+![The Summary sheet of the 2025-W38 demo report, rendered by LibreOffice in CI](docs/screenshots/summary.png)
+
+The other sheets of the demo report, rendered the same way: [Branches](docs/screenshots/branches.png), [Products](docs/screenshots/products.png), [Data](docs/screenshots/data.png) (first 40 rows) and [Run info](docs/screenshots/run-info.png).
+
 ## What it does
 
 - **Template checks with findings.** Each workbook is checked against template version 3. Renamed sheets, extra columns, a missing or contradictory week, duplicate submissions and missing branches are resolved by fixed rules and reported as findings with a code; files with errors are excluded, the others are used. `--strict` stops on any finding.
