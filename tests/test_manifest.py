@@ -1,4 +1,6 @@
 import json
+import shutil
+from dataclasses import replace
 
 from buildreport.manifest import KEYS, Output, build_manifest, ci_info, dumps
 
@@ -79,6 +81,38 @@ def test_run_facts(demo_ctx):
     assert manifest["timestamp_source"] == "SOURCE_DATE_EPOCH"
     assert manifest["config"]["sha256"] == demo_ctx.cfg.sha256
     assert manifest["strict"] is False and manifest["notify"] == "dry-run"
+
+
+def test_config_path_is_relative_to_the_working_directory(demo_ctx, monkeypatch):
+    cfg_path = demo_ctx.cfg.path.resolve()
+    assert cfg_path.is_absolute()
+    monkeypatch.chdir(cfg_path.parent)
+    assert make(demo_ctx)["config"]["path"] == "report.yaml"
+    monkeypatch.chdir(cfg_path.parent.parent)
+    assert make(demo_ctx)["config"]["path"] == f"{cfg_path.parent.name}/report.yaml"
+
+
+def test_config_path_outside_the_working_directory_is_only_the_file_name(demo_ctx, tmp_path, monkeypatch):
+    elsewhere = tmp_path / "exports" / "weekly.yaml"
+    ctx = replace(demo_ctx, cfg=replace(demo_ctx.cfg, path=elsewhere))
+    monkeypatch.chdir(demo_ctx.cfg.path.parent)
+    entry = make(ctx)["config"]
+    assert entry["path"] == "weekly.yaml"
+    assert "exports" not in json.dumps(make(ctx))
+
+
+def test_an_absolute_config_option_gives_a_relative_path_in_the_manifest(
+    run_cli, demo_dir, root, tmp_path, monkeypatch
+):
+    config = tmp_path / "conf" / "weekly.yaml"
+    config.parent.mkdir()
+    shutil.copyfile(root / "report.yaml", config)
+    monkeypatch.chdir(tmp_path)
+    out = tmp_path / "out"
+    args = ["run", "--period", "2025-W38", "--input", demo_dir, "--out", out, "--config", config]
+    assert run_cli([*args, "--notify", "dry-run"]).exit_code == 0
+    manifest = json.loads(next(out.glob("*.manifest.json")).read_text(encoding="utf-8"))
+    assert manifest["config"]["path"] == "conf/weekly.yaml"
 
 
 def test_inputs_reporting_and_findings(demo_ctx):

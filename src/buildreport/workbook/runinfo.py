@@ -12,7 +12,7 @@ from openpyxl.styles import Font
 from buildreport import __version__
 from buildreport.isoweek import format_range
 from buildreport.metrics import format_value
-from buildreport.reproducible import environment
+from buildreport.reproducible import environment, shown_path
 from buildreport.workbook import styles
 
 if TYPE_CHECKING:
@@ -77,15 +77,6 @@ def _thresholds(ctx: BuildContext) -> str:
             f"{spec.label} {threshold.op} {format_value(threshold.value, spec.format)} ({threshold.style})"
         )
     return "; ".join(parts) or "none"
-
-
-def shown_path(path: Path) -> str:
-    """The path relative to the working directory, or only its name when it lies outside it."""
-    full = path.resolve()
-    try:
-        return full.relative_to(Path.cwd().resolve()).as_posix()
-    except ValueError:
-        return full.name
 
 
 def key_values(ctx: BuildContext) -> list[tuple[str, str]]:

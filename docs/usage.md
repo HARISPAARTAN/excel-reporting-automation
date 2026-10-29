@@ -176,7 +176,7 @@ Subject: `{subject_prefix} {period}: revenue {revenue} ({change} WoW), {n} findi
 
 ## The manifest
 
-`<stem>.manifest.json` is JSON with `schema: 1` and the keys `status` (`built` or `blocked`), `exit_code`, `tool`, `environment`, `period`, `period_start`, `period_end`, `window`, `generated_at`, `timestamp_source`, `config` (`path`, `sha256`), `strict`, `notify`, `inputs` (`file`, `bytes`, `sha256`, `branch`, `week`, `submitted_at`, `status`), `branches_reporting`, `findings`, `kpis`, `ranking`, `above_threshold`, `outputs` (`file`, `bytes`, `sha256`) and, in GitHub Actions, `ci`. The demo page reads the copy in `web/latest/manifest.json`.
+`<stem>.manifest.json` is JSON with `schema: 1` and the keys `status` (`built` or `blocked`), `exit_code`, `tool`, `environment`, `period`, `period_start`, `period_end`, `window`, `generated_at`, `timestamp_source`, `config` (`path`, `sha256`; the path is shown relative to the working directory, or only as the file name when the file lies outside it), `strict`, `notify`, `inputs` (`file`, `bytes`, `sha256`, `branch`, `week`, `submitted_at`, `status`), `branches_reporting`, `findings`, `kpis`, `ranking`, `above_threshold`, `outputs` (`file`, `bytes`, `sha256`) and, in GitHub Actions, `ci`. The demo page reads the copy in `web/latest/manifest.json`.
 
 ## Scheduling
 

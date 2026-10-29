@@ -10,8 +10,8 @@ import pytest
 from buildreport.findings import counts
 from buildreport.isoweek import IsoWeek
 from buildreport.metrics import compute, summarise
+from buildreport.reproducible import shown_path
 from buildreport.workbook import SHEETS, build, formula_cells
-from buildreport.workbook.runinfo import shown_path
 
 W38 = IsoWeek(2025, 38)
 C = "{http://schemas.openxmlformats.org/drawingml/2006/chart}"

@@ -13,7 +13,7 @@ from buildreport import TOOL_NAME, __version__
 from buildreport.config import Config
 from buildreport.isoweek import IsoWeek, window
 from buildreport.metrics import Summary
-from buildreport.reproducible import RunTimestamp
+from buildreport.reproducible import RunTimestamp, shown_path
 from buildreport.resolve import Resolution
 
 SCHEMA = 1
@@ -138,7 +138,7 @@ def build_manifest(
         "window": [str(week) for week in weeks],
         "generated_at": timestamp.iso,
         "timestamp_source": timestamp.source,
-        "config": {"path": cfg.path.as_posix(), "sha256": cfg.sha256},
+        "config": {"path": shown_path(cfg.path), "sha256": cfg.sha256},
         "strict": strict,
         "notify": notify,
         "inputs": [item.as_dict() for item in resolution.inputs],

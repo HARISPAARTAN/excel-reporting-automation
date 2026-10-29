@@ -117,3 +117,16 @@ def environment() -> dict[str, str]:
         "PyYAML": version("PyYAML"),
         "click": version("click"),
     }
+
+
+def shown_path(path: Path) -> str:
+    """The path relative to the working directory, or only its name when it lies outside it.
+
+    Run info and the manifest show paths this way, so an absolute option never puts a local folder layout
+    into a report that is shared or committed.
+    """
+    full = path.resolve()
+    try:
+        return full.relative_to(Path.cwd().resolve()).as_posix()
+    except ValueError:
+        return full.name
