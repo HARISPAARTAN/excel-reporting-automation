@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from openpyxl.formatting.rule import FormulaRule
@@ -78,6 +79,15 @@ def _thresholds(ctx: BuildContext) -> str:
     return "; ".join(parts) or "none"
 
 
+def shown_path(path: Path) -> str:
+    """The path relative to the working directory, or only its name when it lies outside it."""
+    full = path.resolve()
+    try:
+        return full.relative_to(Path.cwd().resolve()).as_posix()
+    except ValueError:
+        return full.name
+
+
 def key_values(ctx: BuildContext) -> list[tuple[str, str]]:
     env = environment()
     period = ctx.result.period
@@ -91,10 +101,10 @@ def key_values(ctx: BuildContext) -> list[tuple[str, str]]:
         env["openpyxl"],
         env["pydantic"],
         env["PyYAML"],
-        ctx.cfg.path.as_posix(),
+        shown_path(ctx.cfg.path),
         ctx.cfg.sha256,
         "yes" if ctx.strict else "no",
-        ctx.input_dir,
+        shown_path(Path(ctx.input_dir)),
         _thresholds(ctx),
     ]
     return list(zip(KEYS, values, strict=True))

@@ -2,6 +2,7 @@ import io
 import zipfile
 from dataclasses import replace
 from datetime import datetime
+from pathlib import Path
 from xml.etree import ElementTree
 
 import pytest
@@ -10,6 +11,7 @@ from buildreport.findings import counts
 from buildreport.isoweek import IsoWeek
 from buildreport.metrics import compute, summarise
 from buildreport.workbook import SHEETS, build, formula_cells
+from buildreport.workbook.runinfo import shown_path
 
 W38 = IsoWeek(2025, 38)
 C = "{http://schemas.openxmlformats.org/drawingml/2006/chart}"
@@ -275,10 +277,24 @@ def test_run_info_key_values(cfg, demo_wb):
     assert values["Timestamp source"] == "SOURCE_DATE_EPOCH"
     assert values["Tool"] == "build-report 0.1.0"
     assert values["openpyxl"] == "3.1.5"
+    assert values["Configuration file"] == "report.yaml"
     assert values["Configuration SHA-256"] == cfg.sha256
     assert values["Strict mode"] == "no"
     assert values["Input folder"] == "data/incoming"
     assert values["Thresholds"] == "Waste % > 6.0% (bad); Labour % of revenue > 32.0% (warn)"
+
+
+def test_run_info_shows_an_absolute_input_folder_relative_to_the_working_directory(cfg, demo_ctx):
+    ctx = replace(demo_ctx, input_dir=str(cfg.path.parent / "data" / "incoming"))
+    ws = build(ctx)["Run info"]
+    values = {ws[f"A{row}"].value: ws[f"B{row}"].value for row in range(3, 17)}
+    assert values["Input folder"] == "data/incoming"
+
+
+def test_shown_path_keeps_only_the_name_outside_the_working_directory(tmp_path):
+    assert shown_path(tmp_path / "exports" / "report.yaml") == "report.yaml"
+    assert shown_path(tmp_path / "exports" / "incoming") == "incoming"
+    assert shown_path(Path.cwd() / "data" / "incoming") == "data/incoming"
 
 
 def test_run_info_inputs_and_findings(demo_wb, demo_ctx):
