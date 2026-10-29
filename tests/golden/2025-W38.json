@@ -1,0 +1,79 @@
+{
+  "period": "2025-W38",
+  "reporting": {
+    "this_week": 12,
+    "last_week": 12,
+    "expected": 12
+  },
+  "findings": [
+    "SHEET_RENAMED",
+    "EXTRA_COLUMN",
+    "WEEK_MISSING",
+    "DUPLICATE_REPLACED",
+    "WEEK_NAME_MISMATCH",
+    "MISSING_BRANCH"
+  ],
+  "kpis": {
+    "revenue": {
+      "value": 303032.57,
+      "previous": 306211.73,
+      "change": -0.010382228009358016
+    },
+    "transactions": {
+      "value": 39418.0,
+      "previous": 39385.0,
+      "change": 0.000837882442554272
+    },
+    "avg_basket": {
+      "value": 7.6876698462631285,
+      "previous": 7.774831280944522,
+      "change": -0.01121071718881138
+    },
+    "waste_pct": {
+      "value": 0.05419024760275768,
+      "previous": 0.05409861340060357,
+      "change": 0.009163420215411305
+    },
+    "labour_pct": {
+      "value": 0.29351366422427794,
+      "previous": 0.29226476725760964,
+      "change": 0.12488969666683003
+    },
+    "revenue_per_labour_hour": {
+      "value": 67.67140911121037,
+      "previous": 67.96398401953168,
+      "change": -0.0043048522322827985
+    },
+    "labour_hours": {
+      "value": 4478.0,
+      "previous": 4505.5,
+      "change": -0.006103651093108423
+    }
+  },
+  "ranking": [
+    "CL-01",
+    "CL-02",
+    "CL-09",
+    "CL-03",
+    "CL-10",
+    "CL-04",
+    "CL-08",
+    "CL-05",
+    "CL-06",
+    "CL-11",
+    "CL-07",
+    "CL-12"
+  ],
+  "above_threshold": {
+    "waste_pct": [
+      "CL-05",
+      "CL-08",
+      "CL-10"
+    ],
+    "labour_pct": [
+      "CL-07",
+      "CL-11",
+      "CL-12"
+    ]
+  }
+}
