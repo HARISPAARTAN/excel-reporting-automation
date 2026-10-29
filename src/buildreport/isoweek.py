@@ -20,7 +20,7 @@ MONTHS = (
     "November",
     "December",
 )
-_PATTERN = re.compile(r"^\s*(\d{4})-?[Ww](\d{2})\s*$")
+_PATTERN = re.compile(r"^\s*([0-9]{4})-?[Ww]([0-9]{2})\s*$")
 
 
 def weeks_in_year(year: int) -> int:
@@ -66,7 +66,7 @@ class IsoWeek:
 
 def last_completed(now: datetime) -> IsoWeek:
     """The ISO week before the week that contains ``now``, taken in UTC."""
-    if now.tzinfo is None:
+    if now.utcoffset() is None:
         raise ValueError("now must be timezone-aware")
     return IsoWeek.from_date(now.astimezone(UTC).date()).shift(-1)
 

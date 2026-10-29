@@ -1,7 +1,7 @@
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta, timezone, tzinfo
 
 import pytest
-from hypothesis import given
+from hypothesis import example, given
 from hypothesis import strategies as st
 
 from buildreport.isoweek import IsoWeek, format_range, last_completed, weeks_in_year, window
@@ -16,6 +16,7 @@ def test_parse_and_format():
 
 def test_week_53_exists_only_in_long_years():
     assert weeks_in_year(2026) == 53
+    assert weeks_in_year(2020) == 53
     assert weeks_in_year(2025) == 52
     assert IsoWeek.parse("2026-W53").sunday == date(2027, 1, 3)
     with pytest.raises(ValueError):
@@ -36,6 +37,17 @@ def test_week_bounds_and_shift():
         (datetime(2025, 9, 21, 23, 59, tzinfo=UTC), IsoWeek(2025, 37)),  # Sunday evening: W38 still runs
         (datetime(2025, 9, 22, 0, 0, tzinfo=UTC), IsoWeek(2025, 38)),  # Monday midnight
         (datetime.fromtimestamp(1758520800, tz=UTC), IsoWeek(2025, 38)),  # the demo SOURCE_DATE_EPOCH
+        # Sunday 23:30 at UTC-5 is already Monday 04:30 UTC
+        (datetime(2025, 9, 21, 23, 30, tzinfo=timezone(timedelta(hours=-5))), IsoWeek(2025, 38)),
+        # Monday 01:00 at UTC+2 is still Sunday 23:00 UTC
+        (datetime(2025, 9, 22, 1, 0, tzinfo=timezone(timedelta(hours=2))), IsoWeek(2025, 37)),
+    ],
+    ids=[
+        "sunday-utc",
+        "monday-utc",
+        "demo-epoch",
+        "utc-minus-5-after-midnight-utc",
+        "utc-plus-2-before-midnight-utc",
     ],
 )
 def test_last_completed_on_sunday_and_monday(now, expected):
@@ -45,6 +57,24 @@ def test_last_completed_on_sunday_and_monday(now, expected):
 def test_last_completed_needs_an_aware_datetime():
     with pytest.raises(ValueError):
         last_completed(datetime(2025, 9, 22, 6, 0))
+
+
+class _NoOffset(tzinfo):
+    """A tzinfo attached to the datetime that still reports no UTC offset."""
+
+    def utcoffset(self, dt):
+        return None
+
+    def dst(self, dt):
+        return None
+
+    def tzname(self, dt):
+        return None
+
+
+def test_last_completed_rejects_a_tzinfo_without_an_offset():
+    with pytest.raises(ValueError, match="timezone-aware"):
+        last_completed(datetime(2025, 9, 22, 6, 0, tzinfo=_NoOffset()))
 
 
 def test_window_is_oldest_first():
@@ -68,13 +98,20 @@ def test_format_range(week, text):
     assert format_range(week) == text
 
 
-@pytest.mark.parametrize("text", ["2025-38", "W38", "2025-W3", "2025-W00", "last", ""])
+@pytest.mark.parametrize("text", ["2025-38", "W38", "2025-W3", "2025-W00", "2025-W54", "last", ""])
 def test_malformed_weeks_are_rejected(text):
     with pytest.raises(ValueError):
         IsoWeek.parse(text)
 
 
+def test_full_width_digits_are_rejected():
+    with pytest.raises(ValueError):
+        IsoWeek.parse("２０２５-W38")
+
+
 @given(st.dates(min_value=date(2020, 1, 1), max_value=date(2030, 12, 31)))
+@example(date(2026, 12, 31))
+@example(date(2020, 12, 31))
 def test_round_trip(day):
     week = IsoWeek.from_date(day)
     assert IsoWeek.parse(str(week)) == week
