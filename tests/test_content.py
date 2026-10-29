@@ -22,12 +22,13 @@ PHONE = re.compile(
     # a country prefix written with two zeros, then the number
     r"|(?<![\w.])00\d{1,3}[ .-]\d{3,}"
     # national: a leading zero and an area code (brackets optional), then the number
-    r"|(?<![\w.])\(?0\d{2,5}\)?[ /.-]\d{3,}"
+    r"|(?<![\w.+])\(?0\d{2,5}\)?[ /.-]\d{3,}"
     # an area code in brackets, then the number
     r"|(?<![\w.])\(\d{2,5}\)[ /.-]?\d{3,}"
     # any other run of digit groups joined by spaces, slashes or hyphens with seven or more digits in all;
-    # an ISO date is not a phone number, and neither is a run that continues into a word, a time or a longer run
-    r"|(?<![\w.:/+-])(?!\d{4}-\d{2}-\d{2}\b)(?=(?:[ /-]?\d){7})\d{1,10}(?:[ /-]\d{1,10})+(?![\w:]|[ /-]\d)"
+    # an ISO date is not a phone number, and neither is a run that continues into a word, a time or a longer run,
+    # a run that starts inside another run, or the numbers of an SVG viewBox
+    r"|(?<!viewBox=\x22)(?<![\w.:/+-])(?<!\d[ /-])(?!\d{4}-\d{2}-\d{2}\b)(?=(?:[ /-]?\d){7})\d{1,10}(?:[ /-]\d{1,10})+(?![\w:]|[ /-]\d)"
 )
 STREET = re.compile(
     # German: a word that ends in the street suffix, then the house number
@@ -123,7 +124,7 @@ def test_no_street_addresses():
 def test_phone_pattern_finds_phone_numbers_and_leaves_dates_alone():
     # The examples are assembled here so that this file does not contain them in one piece.
     numbers = [
-        " ".join(["+49", "123", "456789"]),
+        " ".join(["".join(["+", "49"]), "123", "456789"]),
         " ".join(["0123", "4567890"]),
         " ".join(["".join(["(", "0049", ")"]), "123", "456789"]),
         " ".join(["(030)", "1234567"]),
