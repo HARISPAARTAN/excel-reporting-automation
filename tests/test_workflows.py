@@ -223,6 +223,15 @@ def test_task_scheduler_xml():
     assert action.findtext(f"{TASK}WorkingDirectory") == "D:\\Cedarline\\build-report"
 
 
+def test_task_scheduler_xml_declares_no_encoding():
+    # Register-ScheduledTask hands the file to Task Scheduler as a UTF-16 string; a declaration that names
+    # another encoding makes its parser refuse the text ("unable to switch the encoding").
+    first = (
+        (ROOT / "docs" / "scheduling" / "build-report-weekly.xml").read_text(encoding="utf-8").splitlines()[0]
+    )
+    assert first == '<?xml version="1.0"?>'
+
+
 def test_scheduling_doc_has_the_commands():
     text = (ROOT / "docs" / "scheduling.md").read_text(encoding="utf-8")
     assert (
