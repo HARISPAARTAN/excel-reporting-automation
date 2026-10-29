@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from openpyxl import load_workbook
+from PIL import Image
 
 from buildreport.config import Config, load_config
 from buildreport.isoweek import IsoWeek
@@ -121,6 +122,25 @@ def rename_pages(folder: Path) -> list[Path]:
     return renamed
 
 
+PALETTE_SIZES = (256, 64, 16)
+
+
+def shrink(png: Path, limit: int = MAX_PNG_BYTES) -> int:
+    """Store the image with a colour palette so that it stays small; return its size in bytes.
+
+    pdftoppm writes 24-bit RGB; a rendered sheet uses a few dozen colours plus anti-aliased text, so a
+    256-colour palette keeps it legible at a fraction of the size. Only when that is still over ``limit``
+    are 64 and then 16 colours tried; the last attempt is what stays on disk.
+    """
+    with Image.open(png) as image:
+        rgb = image.convert("RGB")
+    for colours in PALETTE_SIZES:
+        rgb.quantize(colors=colours, method=Image.Quantize.MEDIANCUT).save(png, format="PNG", optimize=True)
+        if png.stat().st_size <= limit:
+            break
+    return png.stat().st_size
+
+
 def oversized(pngs: Iterable[Path], limit: int = MAX_PNG_BYTES) -> list[str]:
     """The names of the images larger than ``limit`` bytes."""
     return [path.name for path in pngs if path.stat().st_size > limit]
@@ -204,6 +224,8 @@ def main(argv: list[str] | None = None) -> int:
             pngs = rename_pages(work)
             if len(pngs) != len(PAGES):
                 return fail(f"pdftoppm wrote {len(pngs)} images, expected {len(PAGES)}")
+            for path in pngs:
+                shrink(path)
             too_big = oversized(pngs)
             if too_big:
                 return fail(f"over {MAX_PNG_BYTES:,} bytes: {', '.join(too_big)}")

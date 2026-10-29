@@ -9,6 +9,7 @@ from urllib.request import url2pathname
 
 import pytest
 from openpyxl import load_workbook
+from PIL import Image, ImageDraw
 
 from conftest import STEM
 
@@ -276,6 +277,51 @@ def test_publish_latest_stages_the_copy(tool, report_dir, old_target, tmp_path, 
     assert sorted(path.name for path in tmp_path.iterdir()) == ["latest", "report"]
 
 
+def _sheet_like_image(width: int = 1440, height: int = 2000) -> Image.Image:
+    """An RGB page: white, a coloured header band, a grid of grey rules and a gradient block of many colours."""
+    image = Image.new("RGB", (width, height), "white")
+    draw = ImageDraw.Draw(image)
+    draw.rectangle([0, 0, width, 80], fill=(31, 54, 92))
+    for y in range(120, height, 24):
+        draw.line([(40, y), (width - 40, y)], fill=(210, 210, 210))
+    for x in range(0, 400):
+        draw.line([(40 + x, 200), (40 + x, 600)], fill=(x % 256, (x * 3) % 256, 255 - x % 256))
+    return image
+
+
+def test_shrink_stores_a_palette_png_under_the_limit(tool, tmp_path):
+    render = tool("render_sheets")
+    png = tmp_path / "data.png"
+    _sheet_like_image().save(png, format="PNG")
+    before = png.stat().st_size
+    after = render.shrink(png)
+    assert after == png.stat().st_size < before
+    assert after <= render.MAX_PNG_BYTES
+    with Image.open(png) as image:
+        assert image.mode == "P" and image.size == (1440, 2000)
+        assert image.convert("RGB").getpixel((5, 5)) == (31, 54, 92)  # the header colour survives
+        assert image.convert("RGB").getpixel((1400, 1900)) == (255, 255, 255)
+
+
+def test_shrink_tries_smaller_palettes_only_while_over_the_limit(tool, tmp_path, monkeypatch):
+    render = tool("render_sheets")
+    png = tmp_path / "run-info.png"
+    _sheet_like_image(600, 400).save(png, format="PNG")
+    sizes = []
+    original = render.Image.Image.quantize
+
+    def counting(self, *args, **kwargs):
+        sizes.append(kwargs["colors"])
+        return original(self, *args, **kwargs)
+
+    monkeypatch.setattr(render.Image.Image, "quantize", counting)
+    render.shrink(png)
+    assert sizes == [256]
+    sizes.clear()
+    render.shrink(png, limit=1)
+    assert sizes == [256, 64, 16]
+
+
 def test_oversized_pages_are_named(tool, tmp_path):
     render = tool("render_sheets")
     small, big = tmp_path / "summary.png", tmp_path / "data.png"
@@ -332,6 +378,7 @@ def fake_render(tool, tmp_path, monkeypatch):
         return ""
 
     monkeypatch.setattr(render, "_run", run)
+    monkeypatch.setattr(render, "shrink", lambda png, limit=render.MAX_PNG_BYTES: png.stat().st_size)
     return state
 
 
