@@ -49,9 +49,13 @@ def run_timestamp(env: Mapping[str, str] | None = None, now: datetime | None = N
     source = os.environ if env is None else env
     raw = source.get("SOURCE_DATE_EPOCH", "").strip()
     if raw:
-        if not raw.isdigit():
+        if not (raw.isascii() and raw.isdigit()):
             raise TimestampError(f"SOURCE_DATE_EPOCH must be a whole number of seconds, got {raw!r}")
-        return RunTimestamp(datetime.fromtimestamp(int(raw), tz=UTC), "SOURCE_DATE_EPOCH")
+        try:
+            value = datetime.fromtimestamp(int(raw), tz=UTC)
+        except (OverflowError, OSError, ValueError) as exc:
+            raise TimestampError(f"SOURCE_DATE_EPOCH out of range: {raw!r}") from exc
+        return RunTimestamp(value, "SOURCE_DATE_EPOCH")
     current = now if now is not None else datetime.now(UTC)
     return RunTimestamp(current.astimezone(UTC).replace(microsecond=0), "clock")
 

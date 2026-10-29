@@ -51,7 +51,19 @@ def test_timestamp_from_the_clock_drops_microseconds():
     assert stamp.value == datetime(2025, 9, 22, 6, 0, 30, tzinfo=UTC)
 
 
-@pytest.mark.parametrize("raw", ["abc", "-5", "1.5"])
+@pytest.mark.parametrize(
+    "raw",
+    [
+        "abc",
+        "-5",
+        "1.5",
+        "1758520800000",
+        "99999999999999999999",
+        "253402300800",
+        "²",
+        "٣٣",
+    ],
+)
 def test_invalid_source_date_epoch(raw):
     with pytest.raises(TimestampError):
         run_timestamp({"SOURCE_DATE_EPOCH": raw})
@@ -61,6 +73,10 @@ def test_zip_time_is_clamped_and_even():
     assert zip_time(datetime(1970, 1, 1, tzinfo=UTC)) == (1980, 1, 1, 0, 0, 0)
     assert zip_time(datetime(2025, 9, 22, 6, 0, 1, tzinfo=UTC)) == (2025, 9, 22, 6, 0, 0)
     assert zip_time(WHEN) == (2025, 9, 22, 6, 0, 0)
+
+
+def test_zip_time_clamps_above_the_format_maximum():
+    assert zip_time(datetime(2200, 1, 1, tzinfo=UTC)) == (2107, 12, 31, 23, 59, 58)
 
 
 def test_normalise_sets_times_attributes_and_core_properties():
@@ -84,6 +100,15 @@ def test_normalise_sets_times_attributes_and_core_properties():
     assert b">2025-09-22T06:00:00Z</dcterms:created>" in core
     assert b">2025-09-22T06:00:00Z</dcterms:modified>" in core
     assert b"2030" not in core and b"2031" not in core
+
+
+def test_normalise_keeps_members_other_than_core_properties_byte_identical():
+    members = {"docProps/core.xml": CORE, "xl/workbook.xml": b"<w/>"}
+    result = normalise_zip(make_zip(members), WHEN)
+    with zipfile.ZipFile(io.BytesIO(result)) as archive:
+        for name, data in members.items():
+            if name != "docProps/core.xml":
+                assert archive.read(name) == data
 
 
 @settings(max_examples=50)
