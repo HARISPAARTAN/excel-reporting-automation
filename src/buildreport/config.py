@@ -5,9 +5,10 @@ from __future__ import annotations
 import hashlib
 import re
 import string
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
@@ -42,6 +43,17 @@ class ConfigError(Exception):
 def normalise(text: str) -> str:
     """Whitespace collapsed and case folded, for labels, headers, sheet names and row keys."""
     return " ".join(text.split()).casefold()
+
+
+def _first_collision(values: Iterable[str]) -> str | None:
+    """The first value that normalises to the same text as an earlier one, as written; None if all differ."""
+    seen: set[str] = set()
+    for value in values:
+        folded = normalise(value)
+        if folded in seen:
+            return value
+        seen.add(folded)
+    return None
 
 
 class _Model(BaseModel):
@@ -140,6 +152,13 @@ class TemplateSpec(_Model):
             ]
             if len(headers) != len(set(headers)):
                 raise ValueError(f"headers on sheet {table.sheet.name} must be unique")
+        label = _first_collision(self.cover.labels.model_dump().values())
+        if label is not None:
+            raise ValueError(f"template.cover.labels: duplicate label {label!r}")
+        sheets = (self.cover.sheet, self.sales.sheet, self.labour.sheet)
+        name = _first_collision(text for sheet in sheets for text in (sheet.name, *sheet.aliases))
+        if name is not None:
+            raise ValueError(f"template: duplicate sheet name or alias {name!r}")
         return self
 
 
@@ -239,6 +258,9 @@ class ReportConfig(_Model):
         codes = [branch.code for branch in self.branches]
         if len(codes) != len(set(codes)):
             raise ValueError("branch codes must be unique")
+        branch_name = _first_collision(branch.name for branch in self.branches)
+        if branch_name is not None:
+            raise ValueError(f"branches: duplicate name {branch_name!r}")
         for label, values in (("product_groups", self.product_groups), ("roles", self.roles)):
             folded = [normalise(value) for value in values]
             if len(folded) != len(set(folded)):
@@ -248,6 +270,13 @@ class ReportConfig(_Model):
             raise ValueError(
                 f"metrics must define {', '.join(missing)} (the sheet layout of v0.1.0 needs them)"
             )
+        if [key for key in self.metrics if key in REQUIRED_METRICS] != list(REQUIRED_METRICS):
+            raise ValueError(
+                f"metrics: required metrics must appear in the order {', '.join(REQUIRED_METRICS)}"
+            )
+        metric_label = _first_collision(spec.label for spec in self.metrics.values())
+        if metric_label is not None:
+            raise ValueError(f"metrics: duplicate label {metric_label!r}")
         compile_metrics({key: spec.expr for key, spec in self.metrics.items()}, measure_keys(self.template))
         for key in self.summary_kpis:
             if key not in self.metrics:
@@ -325,6 +354,30 @@ class Config:
         return self.file_name(period).removesuffix(".xlsx")
 
 
+class _DuplicateKeyError(yaml.YAMLError):
+    def __init__(self, key: object, line: int) -> None:
+        super().__init__(f"duplicate key {key!r} on line {line}")
+
+
+class _UniqueKeyLoader(yaml.SafeLoader):
+    """SafeLoader that refuses a repeated mapping key at any level instead of keeping the last value."""
+
+    def construct_mapping(self, node: yaml.MappingNode, deep: bool = False) -> dict[Any, Any]:
+        seen: set[Any] = set()
+        for key_node, _ in node.value:
+            if key_node.tag == "tag:yaml.org,2002:merge":
+                continue
+            key = self.construct_object(key_node, deep=True)
+            try:
+                repeated = key in seen
+            except TypeError:
+                continue  # an unhashable key: the parent class reports it
+            if repeated:
+                raise _DuplicateKeyError(key, key_node.start_mark.line + 1)
+            seen.add(key)
+        return super().construct_mapping(node, deep=deep)
+
+
 def _describe(path: Path, error: ValidationError) -> str:
     parts = []
     for item in error.errors():
@@ -341,7 +394,9 @@ def load_config(path: Path | str) -> Config:
     except OSError as exc:
         raise ConfigError(f"cannot read {path}: {exc.strerror or exc}") from exc
     try:
-        data = yaml.safe_load(raw.decode("utf-8"))
+        data = yaml.load(raw.decode("utf-8"), Loader=_UniqueKeyLoader)
+    except _DuplicateKeyError as exc:
+        raise ConfigError(f"{path}: {exc}") from exc
     except (UnicodeDecodeError, yaml.YAMLError) as exc:
         raise ConfigError(f"{path} is not valid YAML: {exc}") from exc
     if not isinstance(data, dict):
