@@ -36,3 +36,7 @@
 pre { max-width: 100%; margin: var(--space-3) 0 0; padding: var(--space-3) var(--space-4); overflow-x: auto; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: var(--fs-sm); line-height: 1.6; }
 code { font-family: var(--font-mono); }
 pre code { white-space: pre; }
+/* The schedule commands are one long line each; wrapping shows them whole instead of a third of them. */
+#schedule pre, #schedule pre code { white-space: pre-wrap; overflow-wrap: anywhere; }
+/* The kit's table cells do not wrap; the findings message is a sentence and must. */
+#findings td:last-child { white-space: normal; min-width: 28ch; }

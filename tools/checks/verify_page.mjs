@@ -103,100 +103,108 @@ async function checkTabs(page) {
 }
 
 const { server, base } = LIVE ? { server: null, base: LIVE.endsWith('/') ? LIVE : `${LIVE}/` } : await serve();
-const host = new URL(base).host;
-const allowed = (url) => {
-  const u = new URL(url);
-  return u.host === host && ALLOW_404.some((prefix) => u.pathname.startsWith(new URL(prefix, base).pathname));
-};
-fs.mkdirSync(OUT, { recursive: true });
-const browser = await chromium.launch({ channel: 'chrome', headless: true });
 let failures = 0;
-for (const viewport of VIEWPORTS) {
-  for (const theme of ['dark', 'light']) {
-    const name = `${EXPECT}-${viewport.width}-${theme}`;
-    const context = await browser.newContext({ viewport, colorScheme: theme });
-    await context.addInitScript((value) => {
-      try { localStorage.setItem('hh-theme', value); } catch { /* storage blocked: the OS scheme decides */ }
-    }, theme);
-    const page = await context.newPage();
-    const problems = [];
-    let done = false;
-    page.on('pageerror', (e) => problems.push(`page error: ${e.message}`));
-    page.on('console', (msg) => {
-      if (done || msg.type() !== 'error') return;
-      const where = msg.location().url || '';
-      if (msg.text().startsWith('Failed to load resource') && where && allowed(where)) return;
-      problems.push(`console error: ${msg.text()} ${where}`.trim());
-    });
-    page.on('request', (req) => {
-      const u = new URL(req.url());
-      if (u.protocol.startsWith('http') && u.host !== host) problems.push(`external request: ${req.url()}`);
-    });
-    page.on('requestfailed', (req) => { if (!done) problems.push(`failed request: ${req.url()} ${req.failure()?.errorText ?? ''}`); });
-    page.on('response', (res) => { if (res.status() >= 400 && !allowed(res.url())) problems.push(`HTTP ${res.status()}: ${res.url()}`); });
+let browser = null;
+try {
+  const host = new URL(base).host;
+  const allowed = (url) => {
+    const u = new URL(url);
+    return u.host === host && ALLOW_404.some((prefix) => u.pathname.startsWith(new URL(prefix, base).pathname));
+  };
+  fs.mkdirSync(OUT, { recursive: true });
+  browser = await chromium.launch({ channel: 'chrome', headless: true });
+  for (const viewport of VIEWPORTS) {
+    for (const theme of ['dark', 'light']) {
+      const name = `${EXPECT}-${viewport.width}-${theme}`;
+      const context = await browser.newContext({ viewport, colorScheme: theme });
+      await context.addInitScript((value) => {
+        try { localStorage.setItem('hh-theme', value); } catch { /* storage blocked: the OS scheme decides */ }
+      }, theme);
+      const page = await context.newPage();
+      const problems = [];
+      let done = false;
+      page.on('pageerror', (e) => problems.push(`page error: ${e.message}`));
+      page.on('console', (msg) => {
+        if (done || msg.type() !== 'error') return;
+        const where = msg.location().url || '';
+        if (msg.text().startsWith('Failed to load resource') && where && allowed(where)) return;
+        problems.push(`console error: ${msg.text()} ${where}`.trim());
+      });
+      page.on('request', (req) => {
+        const u = new URL(req.url());
+        if (u.protocol.startsWith('http') && u.host !== host) problems.push(`external request: ${req.url()}`);
+      });
+      page.on('requestfailed', (req) => { if (!done) problems.push(`failed request: ${req.url()} ${req.failure()?.errorText ?? ''}`); });
+      page.on('response', (res) => { if (res.status() >= 400 && !allowed(res.url())) problems.push(`HTTP ${res.status()}: ${res.url()}`); });
 
-    await page.goto(base, { waitUntil: 'networkidle', timeout: 60000 });
-    await page.waitForSelector('main[data-state]:not([data-state="loading"])', { timeout: 15000 });
-    await page.evaluate(() => document.fonts.ready);
-    const info = await page.evaluate(() => {
-      const banner = document.querySelector('.pf-banner')?.getBoundingClientRect();
-      const empty = document.getElementById('empty');
-      return {
-        title: document.title,
-        theme: document.documentElement.getAttribute('data-theme'),
-        bg: getComputedStyle(document.body).backgroundColor,
-        banner: Boolean(banner && banner.width > 0 && banner.height > 0 && banner.top >= 0 && banner.bottom <= innerHeight),
-        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-        fontErrors: [...document.fonts].filter((f) => f.status === 'error').map((f) => f.family),
-        footer: document.querySelector('.pf-footer')?.textContent ?? '',
-        state: document.getElementById('main').dataset.state,
-        empty: empty && !empty.hidden ? empty.textContent : '',
-        kpis: document.querySelectorAll('#kpis .pf-kpi').length,
-        ranking: document.querySelectorAll('#ranking tbody tr').length,
-        findings: document.querySelectorAll('#findings tbody tr').length,
-        tabs: document.querySelectorAll('#sheet-tabs [role="tab"]').length,
-        alts: [...document.querySelectorAll('#previews img')].filter((img) => img.alt.length > 40).length,
-      };
-    });
-    if (!info.title) problems.push('no title');
-    if (info.theme !== theme) problems.push(`data-theme is ${info.theme}, expected ${theme}`);
-    if (info.bg !== BG[theme]) problems.push(`page background ${info.bg}, expected ${BG[theme]}`);
-    if (!info.banner) problems.push('demo banner missing or not on the first screen');
-    if (info.overflow > 0) problems.push(`page scrolls sideways by ${info.overflow}px`);
-    if (info.fontErrors.length) problems.push(`fonts failed: ${info.fontErrors.join(', ')}`);
-    if (!info.footer.includes(FOOTER)) problems.push('footer line missing');
-    const reached = await reachedByTab(page);
-    if (!reached.has('theme-toggle')) problems.push('Tab never reaches the theme toggle');
-    if (EXPECT === 'empty') {
-      if (info.state !== 'empty' || !info.empty.includes('No weekly run yet')) problems.push(`expected the empty state, page is ${info.state}`);
-    } else {
-      if (info.state !== 'filled') problems.push(`expected a loaded report, page is ${info.state}`);
-      if (info.kpis !== 7) problems.push(`${info.kpis} KPI tiles, expected 7`);
-      if (info.ranking !== 12) problems.push(`${info.ranking} ranking rows, expected 12`);
-      if (info.findings < 1) problems.push('findings table is empty');
-      if (info.tabs !== 5) problems.push(`${info.tabs} sheet tabs, expected 5`);
-      if (info.alts !== 5 && info.alts + (await page.locator('#previews .pf-empty').count()) !== 5) problems.push('preview images without alt text');
-      if (!reached.has('tab-summary')) problems.push('Tab never reaches the Summary tab');
-      problems.push(...(await checkTabs(page)));
+      await page.goto(base, { waitUntil: 'networkidle', timeout: 60000 });
+      await page.waitForSelector('main[data-state]:not([data-state="loading"])', { timeout: 15000 });
+      await page.evaluate(() => document.fonts.ready);
+      const info = await page.evaluate(() => {
+        const banner = document.querySelector('.pf-banner')?.getBoundingClientRect();
+        const empty = document.getElementById('empty');
+        return {
+          title: document.title,
+          theme: document.documentElement.getAttribute('data-theme'),
+          bg: getComputedStyle(document.body).backgroundColor,
+          banner: Boolean(banner && banner.width > 0 && banner.height > 0 && banner.top >= 0 && banner.bottom <= innerHeight),
+          overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          fontErrors: [...document.fonts].filter((f) => f.status === 'error').map((f) => f.family),
+          footer: document.querySelector('.pf-footer')?.textContent ?? '',
+          state: document.getElementById('main').dataset.state,
+          empty: empty && !empty.hidden ? empty.textContent : '',
+          kpis: document.querySelectorAll('#kpis .pf-kpi').length,
+          ranking: document.querySelectorAll('#ranking tbody tr').length,
+          findings: document.querySelectorAll('#findings tbody tr').length,
+          tabs: document.querySelectorAll('#sheet-tabs [role="tab"]').length,
+          alts: [...document.querySelectorAll('#previews img')].filter((img) => img.alt.length > 40).length,
+        };
+      });
+      if (!info.title) problems.push('no title');
+      if (info.theme !== theme) problems.push(`data-theme is ${info.theme}, expected ${theme}`);
+      if (info.bg !== BG[theme]) problems.push(`page background ${info.bg}, expected ${BG[theme]}`);
+      if (!info.banner) problems.push('demo banner missing or not on the first screen');
+      if (info.overflow > 0) problems.push(`page scrolls sideways by ${info.overflow}px`);
+      if (info.fontErrors.length) problems.push(`fonts failed: ${info.fontErrors.join(', ')}`);
+      if (!info.footer.includes(FOOTER)) problems.push('footer line missing');
+      const reached = await reachedByTab(page);
+      if (!reached.has('theme-toggle')) problems.push('Tab never reaches the theme toggle');
+      if (EXPECT === 'empty') {
+        if (info.state !== 'empty' || !info.empty.includes('No weekly run yet')) problems.push(`expected the empty state, page is ${info.state}`);
+      } else {
+        if (info.state !== 'filled') problems.push(`expected a loaded report, page is ${info.state}`);
+        if (info.kpis !== 7) problems.push(`${info.kpis} KPI tiles, expected 7`);
+        if (info.ranking !== 12) problems.push(`${info.ranking} ranking rows, expected 12`);
+        if (info.findings < 1) problems.push('findings table is empty');
+        if (info.tabs !== 5) problems.push(`${info.tabs} sheet tabs, expected 5`);
+        if (info.alts !== 5 && info.alts + (await page.locator('#previews .pf-empty').count()) !== 5) problems.push('preview images without alt text');
+        if (!reached.has('tab-summary')) problems.push('Tab never reaches the Summary tab');
+        problems.push(...(await checkTabs(page)));
+      }
+      await page.evaluate(() => {
+        document.activeElement?.blur();
+        window.scrollTo(0, 0);
+      });
+      await page.screenshot({ path: path.join(OUT, `${name}.png`), fullPage: true });
+      await page.screenshot({ path: path.join(OUT, `${name}-top.png`) });
+      done = true;
+      if (problems.length) {
+        failures += 1;
+        console.log(`FAIL ${name}\n  ${problems.join('\n  ')}`);
+      } else {
+        console.log(`ok   ${name}  ${info.title}`);
+      }
+      await context.close();
     }
-    await page.evaluate(() => {
-      document.activeElement?.blur();
-      window.scrollTo(0, 0);
-    });
-    await page.screenshot({ path: path.join(OUT, `${name}.png`), fullPage: true });
-    await page.screenshot({ path: path.join(OUT, `${name}-top.png`) });
-    done = true;
-    if (problems.length) {
-      failures += 1;
-      console.log(`FAIL ${name}\n  ${problems.join('\n  ')}`);
-    } else {
-      console.log(`ok   ${name}  ${info.title}`);
-    }
-    await context.close();
+  }
+} finally {
+  // Runs on a thrown error or a timeout too, so neither Chrome nor the local server keeps the process alive.
+  try {
+    await browser?.close();
+  } finally {
+    server?.close();
   }
 }
-await browser.close();
-server?.close();
 const total = VIEWPORTS.length * 2;
 console.log(failures ? `\n${failures} of ${total} CHECKS FAILED` : `\nALL ${total} CHECKS PASSED (${EXPECT}, ${LIVE ? 'live' : 'local'})`);
 process.exit(failures ? 1 : 0);

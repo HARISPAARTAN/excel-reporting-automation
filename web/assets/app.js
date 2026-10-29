@@ -6,7 +6,8 @@ import { fmt, initTabs, mountBanner, mountThemeToggle, pill, renderKpi, renderTa
 const REPO_URL = 'https://github.com/HARISPAARTAN/excel-reporting-automation';
 const MANIFEST_URL = 'latest/manifest.json';
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const OP_WORDS = { '>': 'above', '>=': 'at or above', '<': 'below', '<=': 'at or below' };
+const NOT_BUILT = 'the manifest is not a built report';
+const OP_WORDS ={ '>': 'above', '>=': 'at or above', '<': 'below', '<=': 'at or below' };
 const SHEETS = [
   ['summary', (p) => `Summary sheet of the ${p} report: the seven key figures with last week and the change, the branch ranking, the data notes and three charts (revenue by branch, chain revenue over the last eight weeks, revenue mix by product group).`],
   ['branches', (p) => `Branches sheet of the ${p} report: one row per branch with revenue, change, transactions, average basket, waste, labour and rank, a total row, and the weekly totals of the last eight weeks.`],
@@ -54,6 +55,7 @@ function tenths(change, type) {
 }
 
 function relative(change) {
+  if (change === null || change === undefined) return fmt.pct(null);
   const steps = tenths(change, 'relative');
   return steps > 0 ? `+${fmt.pct(change)}` : fmt.pct(steps === 0 ? 0 : change);
 }
@@ -212,28 +214,40 @@ async function loadManifest() {
   if (!response.ok) return { state: 'error', reason: `the server answered ${response.status}` };
   try {
     const manifest = await response.json();
-    if (manifest.schema !== 1 || manifest.status !== 'built') return { state: 'error', reason: 'the manifest is not a built report' };
+    if (manifest.schema !== 1 || manifest.status !== 'built') return { state: 'error', reason: NOT_BUILT };
     return { state: 'filled', manifest };
   } catch {
     return { state: 'error', reason: 'the manifest is not valid JSON' };
   }
 }
 
+function renderRun(manifest) {
+  renderLinks(manifest);
+  renderFacts(manifest);
+  renderKpis(manifest);
+  renderRanking(manifest);
+  renderFindings(manifest);
+  renderPreviews(manifest);
+  $('run-card').hidden = false;
+  for (const section of document.querySelectorAll('[data-needs-run]')) section.hidden = false;
+}
+
+// A built manifest with an unexpected shape throws while rendering; it gets the message of a manifest that is not
+// a built report, and the download links that renderLinks may already have shown are hidden again.
 async function start() {
   mountBanner({ repoUrl: REPO_URL });
   mountThemeToggle($('theme'));
-  const result = await loadManifest();
+  let result = await loadManifest();
   if (result.state === 'filled') {
-    const manifest = result.manifest;
-    renderLinks(manifest);
-    renderFacts(manifest);
-    renderKpis(manifest);
-    renderRanking(manifest);
-    renderFindings(manifest);
-    renderPreviews(manifest);
-    $('run-card').hidden = false;
-    for (const section of document.querySelectorAll('[data-needs-run]')) section.hidden = false;
-  } else {
+    try {
+      renderRun(result.manifest);
+    } catch (error) {
+      console.error(error);
+      for (const id of ['link-xlsx', 'link-pdf', 'link-eml']) $(id).hidden = true;
+      result = { state: 'error', reason: NOT_BUILT };
+    }
+  }
+  if (result.state !== 'filled') {
     if (result.state === 'error') {
       $('empty-title').textContent = 'The latest run could not be loaded';
       $('empty-text').textContent = `Reason: ${result.reason}. The commands under Run it locally build the same report on your own machine.`;
