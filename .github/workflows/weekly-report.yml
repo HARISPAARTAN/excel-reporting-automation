@@ -25,7 +25,8 @@ jobs:
           git add -A web/latest
           if ! git diff --cached --quiet; then
             git commit -m "chore(report): weekly report ${DONE} [skip ci]"
-            git pull --rebase origin main && git push origin HEAD:main
+            git pull --rebase origin main
+            git push origin HEAD:main
           fi
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
   pages: {needs: report, permissions: {contents: read, pages: write, id-token: write}, uses: ./.github/workflows/pages.yml,

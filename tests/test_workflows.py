@@ -37,6 +37,7 @@ def runs(job):
 
 
 def test_every_action_is_pinned():
+    assert {p.name for p in WORKFLOWS.glob("*.yml")} == {"ci.yml", "pages.yml", "weekly-report.yml"}
     for path in sorted(WORKFLOWS.glob("*.yml")):
         text = path.read_text(encoding="utf-8")
         for used in re.findall(r"uses:\s*([^\s,}]+)", text):
@@ -45,6 +46,7 @@ def test_every_action_is_pinned():
 
 
 def test_uv_sync_is_locked_everywhere():
+    assert {p.name for p in WORKFLOWS.glob("*.yml")} == {"ci.yml", "pages.yml", "weekly-report.yml"}
     for path in sorted(WORKFLOWS.glob("*.yml")):
         for line in path.read_text(encoding="utf-8").splitlines():
             if "uv sync" in line:
@@ -144,7 +146,9 @@ def test_weekly_commit_step():
     assert 'git config user.email "41898282+github-actions[bot]@users.noreply.github.com"' in commit
     assert "git add -A web/latest" in commit
     assert 'git commit -m "chore(report): weekly report ${DONE} [skip ci]"' in commit
-    assert "git pull --rebase origin main && git push origin HEAD:main" in commit
+    assert "git pull --rebase origin main" in commit
+    assert "git push origin HEAD:main" in commit
+    assert "git pull --rebase origin main && git push origin HEAD:main" not in commit
     assert 'echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"' in commit
 
 
@@ -184,6 +188,12 @@ def test_pages_render_steps_are_skipped_without_a_workbook():
     assert commands[1] == (
         "uv run python tools/render_sheets.py web/latest/Cedarline_Weekly_Report_*.xlsx --out web/latest/preview"
     )
+
+
+def test_long_jobs_have_timeouts():
+    assert load("ci.yml")["jobs"]["render"]["timeout-minutes"] == 30
+    assert load("ci.yml")["jobs"]["scheduler"]["timeout-minutes"] == 15
+    assert load("pages.yml")["jobs"]["deploy"]["timeout-minutes"] == 30
 
 
 def test_dependabot():
