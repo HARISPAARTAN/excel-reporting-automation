@@ -235,5 +235,9 @@ def send(message: EmailMessage, settings: SmtpSettings, sender: str, to_addrs: S
             if settings.user is not None and settings.password is not None:
                 client.login(settings.user, settings.password)
             client.send_message(message, from_addr=sender, to_addrs=list(to_addrs))
-    except (smtplib.SMTPException, OSError, UnicodeError) as exc:
+    except UnicodeError as exc:
+        raise NotifyError(
+            f"sending through {settings.host}:{settings.port} failed: the SMTP credentials must be ASCII"
+        ) from exc
+    except (smtplib.SMTPException, OSError) as exc:
         raise NotifyError(f"sending through {settings.host}:{settings.port} failed: {exc}") from exc
