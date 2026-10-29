@@ -149,6 +149,7 @@ class FakeSMTP:
 
     instances: list["FakeSMTP"] = []
     fail: Exception | None = None
+    login_fail: Exception | None = None
 
     def __init__(self, host, port, timeout=None, context=None):
         self.host, self.port, self.timeout, self.context = host, port, timeout, context
@@ -166,6 +167,8 @@ class FakeSMTP:
         self.calls.append("starttls")
 
     def login(self, user, password):
+        if type(self).login_fail is not None:
+            raise type(self).login_fail
         self.calls.append(("login", user, password))
 
     def send_message(self, message, from_addr=None, to_addrs=None):
@@ -179,6 +182,7 @@ def fake(monkeypatch):
     class Fake(FakeSMTP):
         instances = []
         fail = None
+        login_fail = None
 
     monkeypatch.setattr(smtplib, "SMTP", Fake)
     monkeypatch.setattr(smtplib, "SMTP_SSL", Fake)
@@ -215,3 +219,17 @@ def test_a_send_failure_raises_notify_error(fake, cfg, demo_ctx, demo_workbook_b
     message = build_message(demo_ctx, NAME, demo_workbook_bytes, "smtp")
     with pytest.raises(NotifyError, match="smtp.cedarline.example:587"):
         send(message, settings(), "reporting@cedarline.example", recipients(cfg))
+
+
+def test_a_unicode_login_error_raises_notify_error(fake, cfg, demo_ctx, demo_workbook_bytes):
+    fake.login_fail = UnicodeEncodeError("ascii", "x", 0, 1, "bad")
+    message = build_message(demo_ctx, NAME, demo_workbook_bytes, "smtp")
+    with pytest.raises(NotifyError, match="smtp.cedarline.example:587") as info:
+        send(message, settings(), "reporting@cedarline.example", recipients(cfg))
+    assert isinstance(info.value.__cause__, UnicodeEncodeError)
+
+
+def test_repr_hides_the_password():
+    value = SmtpSettings("smtp.cedarline.example", 587, "reporting", "SECRETPW", "starttls")
+    assert "SECRETPW" not in repr(value)
+    assert "reporting" in repr(value)

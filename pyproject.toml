@@ -71,6 +71,8 @@ files = [
     "src/buildreport/template.py",
     "src/buildreport/resolve.py",
     "src/buildreport/reproducible.py",
+    "src/buildreport/manifest.py",
+    "src/buildreport/notify.py",
 ]
 
 [[tool.mypy.overrides]]

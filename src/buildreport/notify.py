@@ -11,7 +11,7 @@ import html
 import smtplib
 import ssl
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from email.headerregistry import Address
 from email.message import EmailMessage
 from email.policy import SMTP
@@ -46,7 +46,7 @@ class SmtpSettings:
     host: str
     port: int
     user: str | None
-    password: str | None
+    password: str | None = field(repr=False)
     security: Security
 
 
@@ -211,7 +211,7 @@ def build_message(
         filename=xlsx_name,
     )
     message.set_boundary(f"=_mixed_{digest[:32]}")
-    alternative = message.get_payload()[0]
+    alternative = cast(EmailMessage, message.get_payload(0))
     alternative.set_boundary(f"=_alt_{digest[:32]}")
     return message
 
@@ -235,5 +235,5 @@ def send(message: EmailMessage, settings: SmtpSettings, sender: str, to_addrs: S
             if settings.user is not None and settings.password is not None:
                 client.login(settings.user, settings.password)
             client.send_message(message, from_addr=sender, to_addrs=list(to_addrs))
-    except (smtplib.SMTPException, OSError) as exc:
+    except (smtplib.SMTPException, OSError, UnicodeError) as exc:
         raise NotifyError(f"sending through {settings.host}:{settings.port} failed: {exc}") from exc

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import builtins
 import hashlib
 import json
 from collections.abc import Mapping, Sequence
@@ -49,7 +50,7 @@ class Output:
     sha256: str
 
     @classmethod
-    def of(cls, name: str, data: bytes) -> Output:
+    def of(cls, name: str, data: builtins.bytes) -> Output:
         return cls(name, len(data), hashlib.sha256(data).hexdigest())
 
     def as_dict(self) -> dict[str, object]:
