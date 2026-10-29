@@ -9,7 +9,7 @@ Python CLI that turns twelve weekly branch workbooks into one checked, formatted
 
 ## Status
 
-Work towards v0.1.0. Verified on the development machine (Windows 11, Python 3.13, uv): the test suite passes (`uv run pytest`); the demo run under [Getting started](#getting-started) exits with code 0 and the six warnings of the demo set, and with `--strict` it exits with code 3 and writes no workbook; two runs with `SOURCE_DATE_EPOCH=1758520800` give identical bytes. Not verified yet: the CI jobs, the LibreOffice render, the weekly run and the Pages site.
+v0.1.0. Verified in CI ([run](https://github.com/HARISPAARTAN/excel-reporting-automation/actions/runs/40888772931)): lint and type checks; the test suite on Ubuntu and Windows with Python 3.11, 3.12 and 3.13; the LibreOffice render of the five sheets, one page each, with the recalculated totals matching the engine; registering the Task Scheduler definition on Windows; and the repository checks (scrub, page weight, contrast). The demo run under [Getting started](#getting-started) exits with code 0 and the six warnings of the demo set; with `--strict` it exits with code 3 and writes no workbook; two runs with `SOURCE_DATE_EPOCH=1758520800` give identical bytes. The weekly workflow, started with `workflow_dispatch`, built and published the report for 2026-W43 ([run](https://github.com/HARISPAARTAN/excel-reporting-automation/actions/runs/40887020574)), and the Pages page passed the browser checks at 1440 and 390 px in both themes without external requests or console errors. Not verified: the scheduled Monday run, sending through a real SMTP server (the demo writes the e-mail as an `.eml` file), and the Task Scheduler task or the cron line running on a company machine.
 
 ## Client brief
 
