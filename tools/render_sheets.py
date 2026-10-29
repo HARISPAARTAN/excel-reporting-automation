@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
@@ -94,15 +95,16 @@ def recalc_command(soffice: str, profile_uri: str, workbook: Path, outdir: Path)
     ]
 
 
-def _run(command: list[str]) -> None:
+def _run(command: list[str]) -> str:
+    """Run a command with a 10 minute limit; its stdout, or a RuntimeError that carries its stderr."""
     completed = subprocess.run(command, capture_output=True, text=True, timeout=600)
     if completed.returncode != 0:
         raise RuntimeError(f"{command[0]} failed ({completed.returncode}): {completed.stderr.strip()}")
+    return completed.stdout
 
 
 def pdf_pages(pdf: Path) -> int:
-    completed = subprocess.run(["pdfinfo", str(pdf)], capture_output=True, text=True, check=True)
-    for line in completed.stdout.splitlines():
+    for line in _run(["pdfinfo", str(pdf)]).splitlines():
         if line.startswith("Pages:"):
             return int(line.split(":", 1)[1])
     raise RuntimeError(f"pdfinfo printed no page count for {pdf}")
@@ -117,6 +119,11 @@ def rename_pages(folder: Path) -> list[Path]:
         path.replace(target)
         renamed.append(target)
     return renamed
+
+
+def oversized(pngs: Iterable[Path], limit: int = MAX_PNG_BYTES) -> list[str]:
+    """The names of the images larger than ``limit`` bytes."""
+    return [path.name for path in pngs if path.stat().st_size > limit]
 
 
 def _number(value: Any) -> float | None:
@@ -167,9 +174,12 @@ def main(argv: list[str] | None = None) -> int:
         return fail(
             "LibreOffice (soffice) and poppler-utils (pdftoppm, pdfinfo) are needed; the render runs in CI"
         )
-    args.out.mkdir(parents=True, exist_ok=True)
-    profile_uri = write_profile(Path(os.environ.get("RUNNER_TEMP") or tempfile.gettempdir()) / "lo-profile")
     try:
+        profile_dir = Path(tempfile.mkdtemp(prefix="lo-profile-", dir=os.environ.get("RUNNER_TEMP") or None))
+    except OSError as exc:
+        return fail(f"cannot create the LibreOffice profile folder: {exc}")
+    try:
+        profile_uri = write_profile(profile_dir)
         with tempfile.TemporaryDirectory(prefix="render-") as folder:
             work = Path(folder)
             render_copy = work / "render.xlsx"
@@ -191,8 +201,15 @@ def main(argv: list[str] | None = None) -> int:
                     str(work / "sheet"),
                 ]
             )
+            pngs = rename_pages(work)
+            if len(pngs) != len(PAGES):
+                return fail(f"pdftoppm wrote {len(pngs)} images, expected {len(PAGES)}")
+            too_big = oversized(pngs)
+            if too_big:
+                return fail(f"over {MAX_PNG_BYTES:,} bytes: {', '.join(too_big)}")
+            args.out.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(pdf, args.out / "report-preview.pdf")
-            for path in rename_pages(work):
+            for path in pngs:
                 shutil.copyfile(path, args.out / path.name)
         if args.check_recalc:
             recalc_dir = args.out / "recalc"
@@ -206,9 +223,8 @@ def main(argv: list[str] | None = None) -> int:
             print("recalculated totals match the engine")
     except (RuntimeError, subprocess.SubprocessError, OSError) as exc:
         return fail(str(exc))
-    too_big = [f"{name}.png" for name in PAGES if (args.out / f"{name}.png").stat().st_size > MAX_PNG_BYTES]
-    if too_big:
-        return fail(f"over {MAX_PNG_BYTES:,} bytes: {', '.join(too_big)}")
+    finally:
+        shutil.rmtree(profile_dir, ignore_errors=True)
     print(
         f"rendered {workbook.name}: {len(PAGES)} pages, data table cut to {min(args.rows, total)} of {total:,} rows"
     )

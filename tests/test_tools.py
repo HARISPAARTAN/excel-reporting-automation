@@ -1,10 +1,18 @@
+import hashlib
 import json
 import shutil
+import subprocess
+from pathlib import Path
+from types import SimpleNamespace
+from urllib.parse import urlparse
+from urllib.request import url2pathname
 
 import pytest
 from openpyxl import load_workbook
 
 from conftest import STEM
+
+DROP = object()
 
 
 @pytest.fixture()
@@ -14,12 +22,41 @@ def report_dir(tmp_path, demo_run):
     return folder
 
 
-def test_publish_latest_replaces_the_folder(tool, report_dir, tmp_path, capsys):
+@pytest.fixture()
+def old_target(tmp_path):
     target = tmp_path / "latest"
     (target / "preview").mkdir(parents=True)
     (target / ".gitkeep").write_bytes(b"")
     (target / "Cedarline_Weekly_Report_2025-W37.xlsx").write_bytes(b"old")
     (target / "preview" / "summary.png").write_bytes(b"old")
+    return target
+
+
+def snapshot(folder):
+    """Every path below the folder with its bytes (None for a folder)."""
+    return {
+        path.relative_to(folder).as_posix(): path.read_bytes() if path.is_file() else None
+        for path in sorted(folder.rglob("*"))
+    }
+
+
+def edit_manifest(report_dir, content):
+    """Rewrite the run's manifest: raw bytes, or a dict of changes (DROP removes the key)."""
+    path = report_dir / f"{STEM}.manifest.json"
+    if isinstance(content, bytes):
+        path.write_bytes(content)
+        return
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    for key, value in content.items():
+        if value is DROP:
+            del manifest[key]
+        else:
+            manifest[key] = value
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+
+
+def test_publish_latest_replaces_the_folder(tool, report_dir, old_target, tmp_path, capsys):
+    target = old_target
     assert tool("publish_latest").main([str(report_dir), str(target)]) == 0
     assert capsys.readouterr().out == "2025-W38\n"
     assert sorted(path.name for path in target.iterdir()) == sorted(
@@ -27,6 +64,7 @@ def test_publish_latest_replaces_the_folder(tool, report_dir, tmp_path, capsys):
     )
     assert (target / "manifest.json").read_bytes() == (report_dir / f"{STEM}.manifest.json").read_bytes()
     assert (target / f"{STEM}.xlsx").read_bytes() == (report_dir / f"{STEM}.xlsx").read_bytes()
+    assert sorted(path.name for path in tmp_path.iterdir()) == ["latest", "report"]
 
 
 def test_publish_latest_refuses_a_blocked_or_missing_report(tool, report_dir, tmp_path):
@@ -119,3 +157,205 @@ def test_render_needs_exactly_one_existing_workbook(tool, tmp_path, capsys):
         == 1
     )
     assert "no workbook" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(("damage", "word"), [("flip", "sha256"), ("append", "bytes")])
+def test_publish_latest_verifies_the_manifest_digests(tool, report_dir, old_target, capsys, damage, word):
+    xlsx = report_dir / f"{STEM}.xlsx"
+    blob = bytearray(xlsx.read_bytes())
+    if damage == "flip":
+        blob[len(blob) // 2] ^= 0x01
+    else:
+        blob += b"x"
+    xlsx.write_bytes(bytes(blob))
+    before = snapshot(old_target)
+    assert tool("publish_latest").main([str(report_dir), str(old_target)]) == 1
+    err = capsys.readouterr().err
+    assert err.startswith("publish_latest: ") and f"{STEM}.xlsx" in err and word in err
+    assert snapshot(old_target) == before
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        b"{not json",
+        b"\xff\xfe\x00",
+        b"[1, 2]",
+        {"period": DROP},
+        {"status": DROP},
+        {"outputs": DROP},
+        {"period": None},
+        {"outputs": "nope"},
+        {"outputs": [1]},
+        {"outputs": [{"bytes": 1, "sha256": "x"}]},
+        {"outputs": [{"file": "a.xlsx", "bytes": "9", "sha256": "x"}]},
+        {"outputs": [{"file": "a.xlsx", "bytes": 9, "sha256": None}]},
+    ],
+)
+def test_publish_latest_refuses_a_malformed_manifest(tool, report_dir, old_target, capsys, content):
+    edit_manifest(report_dir, content)
+    before = snapshot(old_target)
+    assert tool("publish_latest").main([str(report_dir), str(old_target)]) == 1
+    assert capsys.readouterr().err.startswith("publish_latest: ")
+    assert snapshot(old_target) == before
+
+
+def test_publish_latest_refuses_two_manifests(tool, report_dir, old_target, capsys):
+    shutil.copyfile(report_dir / f"{STEM}.manifest.json", report_dir / "Other.manifest.json")
+    before = snapshot(old_target)
+    assert tool("publish_latest").main([str(report_dir), str(old_target)]) == 1
+    assert "found 2" in capsys.readouterr().err
+    assert snapshot(old_target) == before
+
+
+@pytest.mark.parametrize(
+    "name", ["../evil.xlsx", "..", ".", "", "sub/report.xlsx", "sub\\report.xlsx", "/abs.xlsx"]
+)
+def test_publish_latest_refuses_names_that_leave_the_folder(
+    tool, report_dir, old_target, tmp_path, capsys, name
+):
+    evil = b"evil"
+    (tmp_path / "evil.xlsx").write_bytes(evil)
+    (report_dir / "sub").mkdir()
+    (report_dir / "sub" / "report.xlsx").write_bytes(evil)
+    entry = {"file": name, "bytes": len(evil), "sha256": hashlib.sha256(evil).hexdigest()}
+    edit_manifest(report_dir, {"outputs": [entry]})
+    before = snapshot(old_target)
+    assert tool("publish_latest").main([str(report_dir), str(old_target)]) == 1
+    assert "plain file name" in capsys.readouterr().err
+    assert snapshot(old_target) == before
+
+
+def test_publish_latest_refuses_overlapping_folders(tool, report_dir, tmp_path, capsys):
+    publish = tool("publish_latest").main
+    before = snapshot(report_dir)
+    siblings = sorted(path.name for path in tmp_path.iterdir())
+    assert publish([str(report_dir), str(report_dir)]) == 1
+    assert publish([str(report_dir), str(report_dir / ".." / "report")]) == 1
+    assert publish([str(report_dir), str(tmp_path)]) == 1
+    assert publish([str(report_dir), str(report_dir / "latest")]) == 1
+    assert capsys.readouterr().err.count("same folder or one holds the other") == 4
+    assert snapshot(report_dir) == before
+    assert sorted(path.name for path in tmp_path.iterdir()) == siblings
+
+
+def test_publish_latest_unlinks_symlinks_and_refuses_a_symlinked_target(
+    tool, report_dir, old_target, tmp_path
+):
+    publish = tool("publish_latest").main
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "keep.txt").write_bytes(b"keep")
+    try:
+        (old_target / "linked").symlink_to(outside, target_is_directory=True)
+        (tmp_path / "alias").symlink_to(old_target, target_is_directory=True)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlinks are not available here")
+    before = snapshot(old_target)
+    assert publish([str(report_dir), str(tmp_path / "alias")]) == 1
+    assert snapshot(old_target) == before
+    assert publish([str(report_dir), str(old_target)]) == 0
+    assert not (old_target / "linked").is_symlink() and not (old_target / "linked").exists()
+    assert (outside / "keep.txt").read_bytes() == b"keep"
+
+
+def test_publish_latest_stages_the_copy(tool, report_dir, old_target, tmp_path, monkeypatch, capsys):
+    before = snapshot(old_target)
+    real, calls = Path.write_bytes, []
+
+    def flaky(self, data):
+        calls.append(self.name)
+        if len(calls) == 2:
+            raise OSError("disk full")
+        return real(self, data)
+
+    monkeypatch.setattr(Path, "write_bytes", flaky)
+    assert tool("publish_latest").main([str(report_dir), str(old_target)]) == 1
+    assert "disk full" in capsys.readouterr().err
+    assert snapshot(old_target) == before
+    assert sorted(path.name for path in tmp_path.iterdir()) == ["latest", "report"]
+
+
+def test_oversized_pages_are_named(tool, tmp_path):
+    render = tool("render_sheets")
+    small, big = tmp_path / "summary.png", tmp_path / "data.png"
+    small.write_bytes(b"x" * render.MAX_PNG_BYTES)
+    big.write_bytes(b"x" * (render.MAX_PNG_BYTES + 1))
+    assert render.oversized([small, big]) == ["data.png"]
+    assert render.oversized([small, big], limit=10) == ["summary.png", "data.png"]
+
+
+def test_pdf_pages_has_a_timeout_and_reports_stderr(tool, tmp_path, monkeypatch):
+    render = tool("render_sheets")
+    calls, outcome = [], {}
+
+    def run(command, **kwargs):
+        calls.append((command, kwargs))
+        return subprocess.CompletedProcess(command, outcome["code"], outcome["out"], outcome["err"])
+
+    monkeypatch.setattr(render.subprocess, "run", run)
+    outcome.update(code=0, out="Title: x\nPages:          5\n", err="")
+    assert render.pdf_pages(tmp_path / "render.pdf") == 5
+    assert calls[0][0][0] == "pdfinfo" and calls[0][1]["timeout"] == 600
+    outcome.update(code=0, out="Title: x\n", err="")
+    with pytest.raises(RuntimeError, match="no page count"):
+        render.pdf_pages(tmp_path / "render.pdf")
+    outcome.update(code=1, out="", err="Syntax Error: bad xref table\n")
+    with pytest.raises(RuntimeError, match=r"pdfinfo failed \(1\): Syntax Error: bad xref table"):
+        render.pdf_pages(tmp_path / "render.pdf")
+
+
+@pytest.fixture()
+def fake_render(tool, tmp_path, monkeypatch):
+    """render_sheets.main with the external programs replaced; LibreOffice and poppler never run."""
+    render = tool("render_sheets")
+    runner = tmp_path / "runner"
+    runner.mkdir()
+    state = SimpleNamespace(render=render, runner=runner, profiles=[], png_size=lambda number: 1000)
+    monkeypatch.setenv("RUNNER_TEMP", str(runner))
+    monkeypatch.setattr(render.shutil, "which", lambda name: name)
+
+    def run(command):
+        if command[0] == "soffice":
+            uri = next(item for item in command if item.startswith("-env:UserInstallation=")).split("=", 1)[1]
+            profile = Path(url2pathname(urlparse(uri).path))
+            assert profile.is_dir() and profile.parent == runner and profile.name.startswith("lo-profile-")
+            state.profiles.append(profile)
+            (Path(command[command.index("--outdir") + 1]) / "render.pdf").write_bytes(b"%PDF")
+            return ""
+        if command[0] == "pdfinfo":
+            return "Pages:          5\n"
+        assert command[0] == "pdftoppm"
+        prefix = Path(command[-1])
+        for number in range(1, 6):
+            (prefix.parent / f"{prefix.name}-{number}.png").write_bytes(b"x" * state.png_size(number))
+        return ""
+
+    monkeypatch.setattr(render, "_run", run)
+    return state
+
+
+def test_render_uses_a_fresh_profile_per_run_and_removes_it(fake_render, demo_run, tmp_path):
+    main, workbook = fake_render.render.main, str(demo_run["xlsx"])
+    assert main([workbook, "--out", str(tmp_path / "first")]) == 0
+    assert main([workbook, "--out", str(tmp_path / "second")]) == 0
+    assert len(set(fake_render.profiles)) == 2
+    assert not any(path.exists() for path in fake_render.profiles)
+    assert list(fake_render.runner.iterdir()) == []
+    assert sorted(path.name for path in (tmp_path / "first").iterdir()) == [
+        "branches.png",
+        "data.png",
+        "products.png",
+        "report-preview.pdf",
+        "run-info.png",
+        "summary.png",
+    ]
+
+
+def test_render_checks_the_image_size_before_copying_anything(fake_render, demo_run, tmp_path, capsys):
+    fake_render.png_size = lambda number: fake_render.render.MAX_PNG_BYTES + 1 if number == 4 else 1000
+    out = tmp_path / "preview"
+    assert fake_render.render.main([str(demo_run["xlsx"]), "--out", str(out)]) == 1
+    assert "over 400,000 bytes: data.png" in capsys.readouterr().err
+    assert not out.exists()
+    assert list(fake_render.runner.iterdir()) == []
