@@ -45,11 +45,20 @@ Outputs in `--out` (period 2025-W38):
 
 A blocked run (exit code 3) writes only the manifest and deletes an older workbook and `.eml` of the same period, so a folder never shows a stale report next to a fresh manifest. Files are written to a temporary name and renamed, so a reader never sees half a file.
 
-The demo week:
+The demo week, in a POSIX shell:
 
 ```bash
 SOURCE_DATE_EPOCH=1758520800 uv run build-report run --period 2025-W38 --input data/incoming --out reports --notify dry-run
 ```
+
+and in PowerShell:
+
+```powershell
+$env:SOURCE_DATE_EPOCH = "1758520800"
+uv run build-report run --period 2025-W38 --input data/incoming --out reports --notify dry-run
+```
+
+The log of either form:
 
 ```text
 INFO reading 96 files from data/incoming
@@ -167,7 +176,7 @@ Subject: `{subject_prefix} {period}: revenue {revenue} ({change} WoW), {n} findi
 
 ## The manifest
 
-`<stem>.manifest.json` is JSON with `schema: 1` and the keys `status` (`built` or `blocked`), `exit_code`, `tool`, `environment`, `period`, `period_start`, `period_end`, `window`, `generated_at`, `timestamp_source`, `config` (path and SHA-256), `strict`, `notify`, `inputs` (file, size, SHA-256, branch, week, submitted at, status), `branches_reporting`, `findings`, `kpis`, `ranking`, `above_threshold`, `outputs` (file, size, SHA-256) and, in GitHub Actions, `ci`. The demo page reads the copy in `web/latest/manifest.json`.
+`<stem>.manifest.json` is JSON with `schema: 1` and the keys `status` (`built` or `blocked`), `exit_code`, `tool`, `environment`, `period`, `period_start`, `period_end`, `window`, `generated_at`, `timestamp_source`, `config` (`path`, `sha256`), `strict`, `notify`, `inputs` (`file`, `bytes`, `sha256`, `branch`, `week`, `submitted_at`, `status`), `branches_reporting`, `findings`, `kpis`, `ranking`, `above_threshold`, `outputs` (`file`, `bytes`, `sha256`) and, in GitHub Actions, `ci`. The demo page reads the copy in `web/latest/manifest.json`.
 
 ## Scheduling
 

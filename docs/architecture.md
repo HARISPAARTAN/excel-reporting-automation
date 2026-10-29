@@ -13,11 +13,11 @@ The tool is one Python package, `buildreport`, with a click command line. A run 
 | Metrics engine | `expr.py`, `metrics.py` | records + the expressions of `report.yaml` → every metric for each branch, product group and the chain, week-on-week change, ranking, thresholds, summary |
 | Workbook writer | `workbook/*.py` | results → the five sheets with values, generated total formulas, three native charts, conditional formatting, the table `tblWeekly`, print setup |
 | Reproducible save | `reproducible.py` | the openpyxl workbook → bytes re-packed with the run timestamp |
-| Manifest | `manifest.py` | run facts, inputs, findings, figures, outputs → `<stem>.manifest.json` |
 | Notifier | `notify.py` | results + workbook → an `EmailMessage`, written as `.eml`, sent through SMTP with `--notify smtp` |
+| Manifest | `manifest.py` | run facts, inputs, findings, figures, outputs → `<stem>.manifest.json`, written last so that it lists the SHA-256 of the workbook and of the `.eml`, when there is one |
 | Command line | `cli.py` | options → the steps above, the log and the exit code |
 
-Module dependencies have no cycles: `isoweek` ← `findings`, `expr` ← `config` ← `discover` ← `template` ← `resolve` ← `metrics` ← `workbook` ← `manifest`, `notify` ← `cli`. `reproducible` and `fixtures` depend only on `isoweek`, `config` and openpyxl. pandas is a test dependency only: `tests/reference.py` computes every metric a second way, from the same records, and the tests compare the two.
+The modules import each other without cycles. `isoweek`, `findings`, `expr` and `reproducible` import nothing from the package and are the leaves; `workbook`, `manifest` and `notify` each build on `metrics` and do not import one another (`notify` names `workbook` only for type checking); `cli` imports every step. `fixtures` needs only `config`, `isoweek` and `reproducible`. pandas is a test dependency only: `tests/reference.py` computes every metric a second way, from the same records, and the tests compare the two.
 
 ## The configuration
 

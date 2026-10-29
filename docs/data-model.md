@@ -57,7 +57,7 @@ The generator (`build-report generate-fixtures`, `src/buildreport/fixtures.py`) 
 | CL-11 | 19,500 | 7.30 | 32.5 | 1.00 |
 | CL-12 | 14,000 | 5.60 | 31.5 | 0.88 |
 
-Net sales follow a seasonal factor by ISO week and a growth of 3 % a year, split by the format's product mix; waste, units, transactions and labour are derived with bounded noise. Labour is semi-fixed, so the labour share rises in slow weeks. The rules are listed in the docstrings of `fixtures.py`.
+Net sales follow a seasonal factor by ISO week and a growth of 3 % a year, split by the format's product mix; waste, units, transactions and labour are derived with bounded noise. Labour is semi-fixed, so the labour share rises in slow weeks. The seasonal factor is a table by ISO week (from 0.86 in week 1 to 1.24 in week 51), the growth compounds from the Monday of 2025-W01, and the product mix depends on the branch format, with more hot drinks in winter and more cold drinks in summer. Labour cost is the branch's labour target (a share of sales) times its base weekly sales, the growth and `0.7 + 0.3 × season`. The tables and the formulas are in `src/buildreport/fixtures.py`.
 
 ## Incoming workbook (template version 3)
 

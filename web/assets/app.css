@@ -21,11 +21,11 @@
 
 .ra-diagram { overflow-x: auto; padding: var(--space-4); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
 .ra-diagram svg { display: block; width: 100%; min-width: 760px; height: auto; }
-.ra-box { fill: var(--surface-2); stroke: var(--border); stroke-width: 1.5; }
+.ra-box { fill: var(--surface-2); stroke: color-mix(in srgb, var(--muted) 65%, var(--surface-2)); stroke-width: 1.5; }
 .ra-box--side { stroke: var(--muted); stroke-dasharray: 5 4; }
 .ra-box--ci { fill: var(--surface); stroke: var(--muted); }
 .ra-label { fill: var(--text); font: 600 13px var(--font-text); }
-.ra-sub { fill: var(--muted); font: 11px var(--font-mono); }
+.ra-sub { fill: var(--muted); font: 13px var(--font-mono); }
 .ra-group { fill: var(--muted); font: 600 12px var(--font-mono); letter-spacing: .06em; }
 .ra-edge { fill: none; stroke: var(--muted); stroke-width: 1.5; }
 .ra-edge--side { stroke-dasharray: 5 4; }

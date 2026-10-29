@@ -39,7 +39,7 @@ The full brief, the roles and the acceptance criteria are in [docs/brief.md](doc
 
 ![How build-report works](docs/architecture.svg)
 
-Discover lists the workbooks in the input folder; the template reader reads each one and records findings; the resolver assigns weeks (the cover wins over the file name), settles duplicates and marks missing branches; the returns become long records, one per branch, week, category and measure; the metrics engine evaluates `report.yaml`; the workbook writer builds the sheets and the reproducible save re-packs the file; the manifest and the e-mail follow. Details: [docs/architecture.md](docs/architecture.md).
+Discover lists the workbooks in the input folder; the template reader reads each one and records findings; the resolver assigns weeks (the cover wins over the file name), settles duplicates and marks missing branches; the returns become long records, one per branch, week, category and measure; the metrics engine evaluates `report.yaml`; the workbook writer builds the sheets and the reproducible save re-packs the file; the e-mail follows and the manifest is written last. Details: [docs/architecture.md](docs/architecture.md).
 
 ## Data model
 

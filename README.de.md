@@ -39,7 +39,7 @@ Der vollständige Auftrag mit Rollen und Abnahmekriterien steht (auf Englisch) i
 
 ![So funktioniert build-report](docs/architecture.svg)
 
-Discover listet die Arbeitsmappen im Eingangsordner; der Vorlagenleser liest jede einzeln und hält Befunde fest; der Resolver ordnet die Wochen zu (das Deckblatt hat Vorrang vor dem Dateinamen), klärt Duplikate und markiert fehlende Filialen; aus den Meldungen werden Einzeldatensätze, einer je Filiale, Woche, Kategorie und Messgröße; die Kennzahlen-Engine wertet `report.yaml` aus; der Arbeitsmappen-Writer baut die Blätter, und das reproduzierbare Speichern packt die Datei neu; Manifest und E-Mail folgen. Einzelheiten (auf Englisch): [docs/architecture.md](docs/architecture.md).
+Discover listet die Arbeitsmappen im Eingangsordner; der Vorlagenleser liest jede einzeln und hält Befunde fest; der Resolver ordnet die Wochen zu (das Deckblatt hat Vorrang vor dem Dateinamen), klärt Duplikate und markiert fehlende Filialen; aus den Meldungen werden Einzeldatensätze, einer je Filiale, Woche, Kategorie und Messgröße; die Kennzahlen-Engine wertet `report.yaml` aus; der Arbeitsmappen-Writer baut die Blätter, und das reproduzierbare Speichern packt die Datei neu; danach folgen die E-Mail und zuletzt das Manifest. Einzelheiten (auf Englisch): [docs/architecture.md](docs/architecture.md).
 
 ## Datenmodell
 
