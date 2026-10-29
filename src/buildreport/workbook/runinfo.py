@@ -115,18 +115,18 @@ def write(ws: Any, ctx: BuildContext) -> None:
     styles.title(ws, "A1", "Run info")
     for row, (key, value) in enumerate(key_values(ctx), start=3):
         ws.cell(row=row, column=1, value=key).font = styles.BOLD_FONT
-        ws.cell(row=row, column=2, value=value)
+        styles.put_text(ws, row, 2, value)
 
     ws.cell(row=lay.inputs_title, column=1, value="Input files").font = styles.BOLD_FONT
     styles.header(ws, lay.inputs_header, 1, INPUT_HEADERS)
     for row, item in enumerate(ctx.resolution.inputs, start=lay.inputs_first):
-        ws.cell(row=row, column=1, value=item.file)
-        ws.cell(row=row, column=2, value=item.branch)
-        ws.cell(row=row, column=3, value=item.week)
-        ws.cell(row=row, column=4, value=item.status)
-        ws.cell(row=row, column=5, value=item.submitted_at)
+        styles.put_text(ws, row, 1, item.file)
+        styles.put_text(ws, row, 2, item.branch)
+        styles.put_text(ws, row, 3, item.week)
+        styles.put_text(ws, row, 4, item.status)
+        styles.put_text(ws, row, 5, item.submitted_at)
         styles.put(ws, row, 6, item.bytes, "#,##0")
-        ws.cell(row=row, column=7, value=item.sha256)
+        styles.put_text(ws, row, 7, item.sha256)
 
     ws.cell(row=lay.findings_title, column=1, value="Findings").font = styles.BOLD_FONT
     styles.header(ws, lay.findings_header, 1, FINDING_HEADERS)
@@ -134,10 +134,10 @@ def write(ws: Any, ctx: BuildContext) -> None:
     if not findings:
         ws.cell(row=lay.findings_first, column=1, value="No findings.")
     for row, item in enumerate(findings, start=lay.findings_first):
-        ws.cell(row=row, column=1, value=item.severity)
-        ws.cell(row=row, column=2, value=item.code)
-        ws.cell(row=row, column=3, value=item.file or "-")
-        ws.cell(row=row, column=4, value=item.message)
+        styles.put_text(ws, row, 1, item.severity)
+        styles.put_text(ws, row, 2, item.code)
+        styles.put_text(ws, row, 3, item.file or "-")
+        styles.put_text(ws, row, 4, item.message)
     if findings:
         first, last = lay.findings_first, lay.findings_last
         target = f"A{first}:D{last}"

@@ -91,6 +91,20 @@ def put(ws: Any, row: int, column: int, value: Any, number_format: str | None = 
     return cell
 
 
+def put_text(ws: Any, row: int, column: int, value: Any) -> Any:
+    """Write a value; a string always becomes a text cell, whatever its first character.
+
+    openpyxl types a string that starts with "=" as a formula (and an error name such as "#REF!" as an
+    error), so text taken from the input files (a file name, a cover entry) could become a live formula in
+    the report. A string that starts with "+", "-", "@", a tab or a carriage return is already stored as text;
+    the same rule covers it. Use this for every cell whose text does not come from report.yaml or the code.
+    """
+    cell = ws.cell(row=row, column=column, value=value)
+    if isinstance(value, str):
+        cell.data_type = "s"
+    return cell
+
+
 def total_row(ws: Any, row: int, first_column: int, last_column: int) -> None:
     for column in range(first_column, last_column + 1):
         cell = ws.cell(row=row, column=column)

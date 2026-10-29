@@ -36,9 +36,12 @@ def write(ws: Any, ctx: BuildContext) -> None:
             ]
         )
     last = len(ctx.records) + 1
-    for row in range(2, last + 1):
+    for row, record in enumerate(ctx.records, start=2):
         ws.cell(row=row, column=2).number_format = styles.DATE_FORMAT
         ws.cell(row=row, column=7).number_format = styles.VALUE_FORMAT
+        # text from the input files (the branch code on the cover, the file name) is never a formula
+        styles.put_text(ws, row, 3, record.branch_code)
+        styles.put_text(ws, row, 8, record.source_file)
     table = Table(displayName=TABLE, ref=f"A1:H{last}")
     table.tableStyleInfo = TableStyleInfo(
         name="TableStyleMedium2",
