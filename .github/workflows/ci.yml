@@ -1,0 +1,104 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          python-version: "3.13"
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy
+
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+        python: ["3.11", "3.12", "3.13"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run pytest -q
+
+  render:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          python-version: "3.13"
+      - run: uv sync --locked
+      - name: Install LibreOffice Calc, Carlito and poppler
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libreoffice-calc-nogui fonts-crosextra-carlito poppler-utils
+      - name: Build the demo report
+        env:
+          SOURCE_DATE_EPOCH: "1758520800"
+        run: uv run build-report run --period 2025-W38 --input data/incoming --out build/demo --notify dry-run
+      - name: Render previews and recalculate the totals
+        run: uv run python tools/render_sheets.py build/demo/Cedarline_Weekly_Report_2025-W38.xlsx --out build/render --check-recalc
+      - name: Render tests
+        run: uv run pytest -m render -q
+      - uses: actions/upload-artifact@v7
+        with:
+          name: demo-render
+          path: |
+            build/demo
+            build/render
+          retention-days: 30
+
+  scheduler:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v7
+      - name: Register, check and remove the Task Scheduler task
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Register-ScheduledTask -TaskPath '\Cedarline\' -TaskName 'Weekly report' -Xml (Get-Content -Raw docs\scheduling\build-report-weekly.xml) | Out-Null
+          try {
+            $task = Get-ScheduledTask -TaskPath '\Cedarline\' -TaskName 'Weekly report'
+            $trigger = $task.Triggers[0]
+            if ($trigger.CimClass.CimClassName -ne 'MSFT_TaskWeeklyTrigger') { throw "unexpected trigger $($trigger.CimClass.CimClassName)" }
+            if ($trigger.DaysOfWeek -ne 2 -or $trigger.WeeksInterval -ne 1) { throw "the trigger is not every Monday" }
+            if (-not $trigger.StartBoundary.StartsWith('2025-09-22T07:00:00')) { throw "start boundary $($trigger.StartBoundary)" }
+            $action = $task.Actions[0]
+            if ($action.Execute -ne '%USERPROFILE%\.local\bin\uv.exe') { throw "the action runs $($action.Execute)" }
+            if (-not $action.Arguments.Contains('run --period last')) { throw "arguments $($action.Arguments)" }
+            if ($action.WorkingDirectory -ne 'D:\Cedarline\build-report') { throw "working directory $($action.WorkingDirectory)" }
+            if ($task.Settings.ExecutionTimeLimit -ne 'PT30M') { throw "time limit $($task.Settings.ExecutionTimeLimit)" }
+            Write-Output "registered and checked: Mondays 07:00, $($action.Execute) $($action.Arguments)"
+          } finally {
+            Unregister-ScheduledTask -TaskPath '\Cedarline\' -TaskName 'Weekly report' -Confirm:$false
+          }
+
+  checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: HARISPAARTAN/portfolio-kit
+          ref: refs/tags/v0.1.0
+          path: _kit
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          python-version: "3.13"
+      - run: uv sync --locked
+      - run: uv run python tools/check_fixtures.py
+      - run: uv run python tools/sync_kit.py --check --kit _kit
+      - run: uv run python tools/checks/scrub.py
+      - run: uv run python tools/checks/page_weight.py web
+      - run: node tools/checks/contrast.mjs

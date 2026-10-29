@@ -1,0 +1,32 @@
+name: weekly-report
+on:
+  schedule: [{cron: "0 6 * * 1"}]   # Monday 06:00 UTC; GitHub may start it late under load
+  workflow_dispatch: {inputs: {period: {description: "ISO week such as 2026-W43, or last", required: false, default: last}}}
+permissions: {contents: read}
+concurrency: {group: weekly-report, cancel-in-progress: false}
+jobs:
+  report:
+    runs-on: ubuntu-24.04
+    permissions: {contents: write}
+    outputs: {sha: "${{ steps.commit.outputs.sha }}"}
+    env: {PERIOD: "${{ inputs.period || 'last' }}"}
+    steps:
+      - {uses: actions/checkout@v7, with: {ref: main}}
+      - {uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2, with: {python-version: "3.13"}}  # v10.3.3
+      - run: uv sync --locked
+      - run: uv run build-report generate-fixtures --weeks 8 --end-week "$PERIOD" --deviations demo --out build/incoming
+      - run: uv run build-report run --period "$PERIOD" --input build/incoming --out build/report --notify dry-run
+      - {uses: actions/upload-artifact@v7, with: {name: weekly-report, path: build/report, retention-days: 90}}
+      - id: commit
+        run: |
+          DONE=$(uv run python tools/publish_latest.py build/report web/latest)   # prints the period
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A web/latest
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(report): weekly report ${DONE} [skip ci]"
+            git pull --rebase origin main && git push origin HEAD:main
+          fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+  pages: {needs: report, permissions: {contents: read, pages: write, id-token: write}, uses: ./.github/workflows/pages.yml,
+          with: {ref: "${{ needs.report.outputs.sha }}"}}
