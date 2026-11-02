@@ -14,20 +14,20 @@
     "PyYAML": "6.0.3",
     "click": "8.5.0"
   },
-  "period": "2026-W43",
-  "period_start": "2026-10-19",
-  "period_end": "2026-10-25",
+  "period": "2026-W44",
+  "period_start": "2026-10-26",
+  "period_end": "2026-11-01",
   "window": [
-    "2026-W36",
     "2026-W37",
     "2026-W38",
     "2026-W39",
     "2026-W40",
     "2026-W41",
     "2026-W42",
-    "2026-W43"
+    "2026-W43",
+    "2026-W44"
   ],
-  "generated_at": "2026-10-29T13:59:27Z",
+  "generated_at": "2026-11-02T14:48:29Z",
   "timestamp_source": "clock",
   "config": {
     "path": "report.yaml",
@@ -36,15 +36,6 @@
   "strict": false,
   "notify": "dry-run",
   "inputs": [
-    {
-      "file": "CL-01_2026-W36.xlsx",
-      "bytes": 6872,
-      "sha256": "fe56712c8ba6ea507f8546214b5a5bd69b5a85669b1d104ce3b3d7b85ee566cf",
-      "branch": "CL-01",
-      "week": "2026-W36",
-      "submitted_at": "2026-09-07T08:07",
-      "status": "used"
-    },
     {
       "file": "CL-01_2026-W37.xlsx",
       "bytes": 6868,
@@ -109,12 +100,12 @@
       "status": "used"
     },
     {
-      "file": "CL-02_2026-W36.xlsx",
-      "bytes": 6864,
-      "sha256": "5618c703ba3d0dfe2e3ca43dba105699b738a4c7f987968996ebb6bbfe17f92b",
-      "branch": "CL-02",
-      "week": "2026-W36",
-      "submitted_at": "2026-09-07T08:14",
+      "file": "CL-01_2026-W44.xlsx",
+      "bytes": 6865,
+      "sha256": "f150b25c285b18014e50878e02a40d8dff7b8cd4b5b7f26304c14efbe0993e6b",
+      "branch": "CL-01",
+      "week": "2026-W44",
+      "submitted_at": "2026-11-02T08:07",
       "status": "used"
     },
     {
@@ -181,12 +172,12 @@
       "status": "used"
     },
     {
-      "file": "CL-03_2026-W36.xlsx",
-      "bytes": 6868,
-      "sha256": "f6a6a039d70a500ff67aef7515886250435e43601df473470490899ea78c0f80",
-      "branch": "CL-03",
-      "week": "2026-W36",
-      "submitted_at": "2026-09-07T08:21",
+      "file": "CL-02_2026-W44.xlsx",
+      "bytes": 6858,
+      "sha256": "31961187be91b97aad3c62e25a728061c98740d46b6a91df302e495093d4ef7c",
+      "branch": "CL-02",
+      "week": "2026-W44",
+      "submitted_at": "2026-11-02T08:14",
       "status": "used"
     },
     {
@@ -245,20 +236,20 @@
     },
     {
       "file": "CL-03_2026-W43.xlsx",
-      "bytes": 6866,
-      "sha256": "658eb59b662bcb62c1e9c2dabc28af09f89764df298948c0761f684e39529d0f",
+      "bytes": 6860,
+      "sha256": "115ecfee479aec091eaf882711b83cdddd37c642c2b8e1e6a5a4f7b85f51c18b",
       "branch": "CL-03",
       "week": "2026-W43",
       "submitted_at": "2026-10-26T08:21",
       "status": "used"
     },
     {
-      "file": "CL-04_2026-W36.xlsx",
-      "bytes": 6857,
-      "sha256": "b2c5acdfff3debec3c00ce624b62fd0603af13ad72ac26d6fc189b134b81975e",
-      "branch": "CL-04",
-      "week": "2026-W36",
-      "submitted_at": "2026-09-07T08:28",
+      "file": "CL-03_2026-W44.xlsx",
+      "bytes": 6868,
+      "sha256": "8399ac409000e149d47376a1ed0f2134d1d905412d218c981849e10389c8fda1",
+      "branch": "CL-03",
+      "week": "2026-W44",
+      "submitted_at": "2026-11-02T08:21",
       "status": "used"
     },
     {
@@ -325,12 +316,12 @@
       "status": "used"
     },
     {
-      "file": "CL-05_2026-W36.xlsx",
-      "bytes": 6854,
-      "sha256": "a4cb0f0ab3427f7562657ef7d2adac488269d4f76eab572f22a78b9fa9899bd6",
-      "branch": "CL-05",
-      "week": "2026-W36",
-      "submitted_at": "2026-09-07T08:35",
+      "file": "CL-04_2026-W44.xlsx",
+      "bytes": 6852,
+      "sha256": "ec3d6d4b0e05b0fb04650c5bd1d02ffd823eca9318f6c37f9b24bc218ce42341",
+      "branch": "CL-04",
+      "week": "2026-W44",
+      "submitted_at": "2026-11-02T08:28",
       "status": "used"
     },
     {
@@ -389,20 +380,20 @@
     },
     {
       "file": "CL-05_2026-W43.xlsx",
-      "bytes": 6900,
-      "sha256": "17c2c848f580448a8e851b97a32df237f510a7204fbfb119b1c3ec73d8dd9f0d",
+      "bytes": 6858,
+      "sha256": "abbcc701d810c8e70844dbfa31db2dfc257ca7f5197e140945e9f8e93b29192f",
       "branch": "CL-05",
       "week": "2026-W43",
       "submitted_at": "2026-10-26T08:35",
       "status": "used"
     },
     {
-      "file": "CL-06_2026-W36.xlsx",
-      "bytes": 6855,
-      "sha256": "4eaaa419e6a20cc2414045dae17ebb44fcb35ff7556f7dd0cc094853c979277a",
-      "branch": "CL-06",
-      "week": "2026-W36",
-      "submitted_at": "2026-09-07T08:42",
+      "file": "CL-05_2026-W44.xlsx",
+      "bytes": 6907,
+      "sha256": "a4acffbbb1ba8635ca81176f5fe377102302abaa8bab2c84f947c58057607cdd",
+      "branch": "CL-05",
+      "week": "2026-W44",
+      "submitted_at": "2026-11-02T08:35",
       "status": "used"
     },
     {
@@ -469,12 +460,12 @@
       "status": "used"
     },
     {
-      "file": "CL-07_2026-W36.xlsx",
-      "bytes": 6862,
-      "sha256": "eb96821bf67a54bab4096f691106cbb2ed219061158ed9c115137df62d7fafcb",
-      "branch": "CL-07",
-      "week": "2026-W36",
-      "submitted_at": "2026-09-07T08:49",
+      "file": "CL-06_2026-W44.xlsx",
+      "bytes": 6849,
+      "sha256": "8f602e23daddb8aa197506a971903fa785eb403960634f50fca4fc31f884310b",
+      "branch": "CL-06",
+      "week": "2026-W44",
+      "submitted_at": "2026-11-02T08:42",
       "status": "used"
     },
     {
@@ -541,12 +532,12 @@
       "status": "used"
     },
     {
-      "file": "CL-08_2026-W36.xlsx",
-      "bytes": 6858,
-      "sha256": "6f2cbbf7be415d4c191c7662cf21e73c2e942346497eced21a498545766553d8",
-      "branch": "CL-08",
-      "week": "2026-W36",
-      "submitted_at": "2026-09-07T08:56",
+      "file": "CL-07_2026-W44.xlsx",
+      "bytes": 6859,
+      "sha256": "2c5287a807729d0dab395c7501e756fbccfc9c298ee69e1bd60592de273ce749",
+      "branch": "CL-07",
+      "week": "2026-W44",
+      "submitted_at": "2026-11-02T08:49",
       "status": "used"
     },
     {
@@ -605,20 +596,20 @@
     },
     {
       "file": "CL-08_2026-W43.xlsx",
-      "bytes": 6838,
-      "sha256": "abdc5b53d62debd2a05328160aab44cc7a5d4345bb3275f8426ca12636d5ac37",
+      "bytes": 6851,
+      "sha256": "b51243ebae7dc2ea940ecef55db4f97a1c59ddc2ceb450bd0b79a5f55d826743",
       "branch": "CL-08",
       "week": "2026-W43",
       "submitted_at": "2026-10-26T08:56",
       "status": "used"
     },
     {
-      "file": "CL-09_2026-W36.xlsx",
-      "bytes": 6862,
-      "sha256": "33505e28adf718d08e67ce0068e8bb0854de42e9d65fa6efafd8170e25a63cac",
-      "branch": "CL-09",
-      "week": "2026-W36",
-      "submitted_at": "2026-09-07T09:03",
+      "file": "CL-08_2026-W44.xlsx",
+      "bytes": 6850,
+      "sha256": "1b009a39573f813f0f718266487cf0d105f34d5a7e2ac4a8f9b5c46eb3715c33",
+      "branch": "CL-08",
+      "week": "2026-W44",
+      "submitted_at": "2026-11-02T08:56",
       "status": "used"
     },
     {
@@ -685,12 +676,12 @@
       "status": "used"
     },
     {
-      "file": "CL-10_2026-W36.xlsx",
-      "bytes": 6861,
-      "sha256": "eedb0e7565ac682f27664b1bdaa1dc42189ff5fd5b880b3f27562de3bb3fbfe7",
-      "branch": "CL-10",
-      "week": "2026-W36",
-      "submitted_at": "2026-09-07T09:10",
+      "file": "CL-09_2026-W44.xlsx",
+      "bytes": 6854,
+      "sha256": "d59556583eead1590a2e42b62e967d1dcdd942b4f0f854a4e9756dc2e3a1035d",
+      "branch": "CL-09",
+      "week": "2026-W44",
+      "submitted_at": "2026-11-02T09:03",
       "status": "used"
     },
     {
@@ -740,47 +731,47 @@
     },
     {
       "file": "CL-10_2026-W42.xlsx",
-      "bytes": 6853,
-      "sha256": "da52f03462c668cbada7bcb68c2b3bcc7ee3d897193b385e67f8655e07dc38f1",
+      "bytes": 6856,
+      "sha256": "03a43c4dcbbd6db8071506ce8566003b77368fd28531d9dcefb16deb1b414449",
       "branch": "CL-10",
       "week": "2026-W42",
-      "submitted_at": "2026-10-19T08:40",
-      "status": "replaced"
-    },
-    {
-      "file": "CL-10_2026-W42_resend.xlsx",
-      "bytes": 6854,
-      "sha256": "98574dae2a02525c581e6f27d0ed030e236c8cc62d0a2569c086a29b1409ca00",
-      "branch": "CL-10",
-      "week": "2026-W42",
-      "submitted_at": "2026-10-19T14:12",
+      "submitted_at": "2026-10-19T09:10",
       "status": "used"
     },
     {
       "file": "CL-10_2026-W43.xlsx",
-      "bytes": 6854,
-      "sha256": "e6c423b96b220969ec4bd48469d5438e2a6eb49f5e63caa5ffdab5ce07e22ee6",
+      "bytes": 6852,
+      "sha256": "f13c2a311861e466fecc3957061ef72bfb327944764c3c0d9458060e2672bb5e",
       "branch": "CL-10",
       "week": "2026-W43",
-      "submitted_at": "2026-10-26T09:10",
-      "status": "used"
+      "submitted_at": "2026-10-26T08:40",
+      "status": "replaced"
     },
     {
-      "file": "CL-11_2026-W33.xlsx",
+      "file": "CL-10_2026-W43_resend.xlsx",
       "bytes": 6855,
-      "sha256": "ac013052caf79a61262b4fbb76e8388a3bb5b3002c325a7c235e1ee3411a2e7c",
-      "branch": "CL-11",
+      "sha256": "b0b1de9941ed9f0166631ed5a79619b20ce08281613707157e1700bbc260da93",
+      "branch": "CL-10",
       "week": "2026-W43",
-      "submitted_at": "2026-10-26T09:17",
+      "submitted_at": "2026-10-26T14:12",
       "status": "used"
     },
     {
-      "file": "CL-11_2026-W36.xlsx",
-      "bytes": 6856,
-      "sha256": "e470b6b576a2605559b91670665733e7852b427d7a5867a4a5a176c598a52fc6",
+      "file": "CL-10_2026-W44.xlsx",
+      "bytes": 6858,
+      "sha256": "776c1c02aa43d27b2818e66733385bbcdf0f419e0fab6b60d239786fbacfceb1",
+      "branch": "CL-10",
+      "week": "2026-W44",
+      "submitted_at": "2026-11-02T09:10",
+      "status": "used"
+    },
+    {
+      "file": "CL-11_2026-W34.xlsx",
+      "bytes": 6858,
+      "sha256": "a4c2c023c343b0bbb4449e6efb77437fbaeefda9582e135eff0663163ab2acc2",
       "branch": "CL-11",
-      "week": "2026-W36",
-      "submitted_at": "2026-09-07T09:17",
+      "week": "2026-W44",
+      "submitted_at": "2026-11-02T09:17",
       "status": "used"
     },
     {
@@ -838,12 +829,12 @@
       "status": "used"
     },
     {
-      "file": "CL-12_2026-W36.xlsx",
-      "bytes": 6853,
-      "sha256": "8d41d7d808b3f18213ee54d40cd1d08a244d86f94944df14765b761e31b79415",
-      "branch": "CL-12",
-      "week": "2026-W36",
-      "submitted_at": "2026-09-07T09:24",
+      "file": "CL-11_2026-W43.xlsx",
+      "bytes": 6855,
+      "sha256": "ac013052caf79a61262b4fbb76e8388a3bb5b3002c325a7c235e1ee3411a2e7c",
+      "branch": "CL-11",
+      "week": "2026-W43",
+      "submitted_at": "2026-10-26T09:17",
       "status": "used"
     },
     {
@@ -883,12 +874,12 @@
       "status": "used"
     },
     {
-      "file": "CL-12_2026-W42.xlsx",
-      "bytes": 6858,
-      "sha256": "b680ee91e896d86b3b061a90553bfabdc720db3c8c36e59f78611a9b7b287934",
+      "file": "CL-12_2026-W41.xlsx",
+      "bytes": 6861,
+      "sha256": "c10badd12df0eea8d8d9232e358178975298f386ee765dae9c51e3c97b76e0d6",
       "branch": "CL-12",
-      "week": "2026-W42",
-      "submitted_at": "2026-10-19T09:24",
+      "week": "2026-W41",
+      "submitted_at": "2026-10-12T09:24",
       "status": "used"
     },
     {
@@ -899,14 +890,18 @@
       "week": "2026-W43",
       "submitted_at": "2026-10-26T09:24",
       "status": "used"
+    },
+    {
+      "file": "CL-12_2026-W44.xlsx",
+      "bytes": 6855,
+      "sha256": "6c4998e0a6257caa34ae6de2a82ba14c9e4001835b7d0945af571d6dc2e043b6",
+      "branch": "CL-12",
+      "week": "2026-W44",
+      "submitted_at": "2026-11-02T09:24",
+      "status": "used"
     }
   ],
   "branches_reporting": [
-    {
-      "week": "2026-W36",
-      "reporting": 12,
-      "expected": 12
-    },
     {
       "week": "2026-W37",
       "reporting": 12,
@@ -929,16 +924,21 @@
     },
     {
       "week": "2026-W41",
-      "reporting": 11,
-      "expected": 12
-    },
-    {
-      "week": "2026-W42",
       "reporting": 12,
       "expected": 12
     },
     {
+      "week": "2026-W42",
+      "reporting": 11,
+      "expected": 12
+    },
+    {
       "week": "2026-W43",
+      "reporting": 12,
+      "expected": 12
+    },
+    {
+      "week": "2026-W44",
       "reporting": 12,
       "expected": 12
     }
@@ -947,101 +947,101 @@
     {
       "severity": "warning",
       "code": "SHEET_RENAMED",
-      "file": "CL-03_2026-W43.xlsx",
-      "message": "sheet 'Sales wk43' used for Sales (alias 'Sales*')"
+      "file": "CL-03_2026-W44.xlsx",
+      "message": "sheet 'Sales wk44' used for Sales (alias 'Sales*')"
     },
     {
       "severity": "warning",
       "code": "EXTRA_COLUMN",
-      "file": "CL-05_2026-W43.xlsx",
+      "file": "CL-05_2026-W44.xlsx",
       "message": "column 'Notes' on sheet Sales ignored"
     },
     {
       "severity": "warning",
       "code": "WEEK_MISSING",
-      "file": "CL-08_2026-W43.xlsx",
-      "message": "ISO week blank on the cover; 2026-W43 taken from the file name"
+      "file": "CL-08_2026-W44.xlsx",
+      "message": "ISO week blank on the cover; 2026-W44 taken from the file name"
     },
     {
       "severity": "warning",
       "code": "DUPLICATE_REPLACED",
-      "file": "CL-10_2026-W42.xlsx",
-      "message": "replaced by CL-10_2026-W42_resend.xlsx (submitted 2026-10-19 14:12, later than 2026-10-19 08:40)"
+      "file": "CL-10_2026-W43.xlsx",
+      "message": "replaced by CL-10_2026-W43_resend.xlsx (submitted 2026-10-26 14:12, later than 2026-10-26 08:40)"
     },
     {
       "severity": "warning",
       "code": "WEEK_NAME_MISMATCH",
-      "file": "CL-11_2026-W33.xlsx",
-      "message": "cover says 2026-W43, file name says 2026-W33; cover used"
+      "file": "CL-11_2026-W34.xlsx",
+      "message": "cover says 2026-W44, file name says 2026-W34; cover used"
     },
     {
       "severity": "warning",
       "code": "MISSING_BRANCH",
       "file": "",
-      "message": "CL-12 Rowanmere: no valid file for 2026-W41; branch left blank"
+      "message": "CL-12 Rowanmere: no valid file for 2026-W42; branch left blank"
     }
   ],
   "kpis": {
     "revenue": {
       "label": "Revenue",
       "format": "eur",
-      "value": 317286.52,
-      "previous": 326278.07,
-      "change": -0.02755793547509947,
+      "value": 326385.7,
+      "previous": 317480.26,
+      "change": 0.02805037390356176,
       "change_type": "relative",
       "better": "higher"
     },
     "transactions": {
       "label": "Transactions",
       "format": "count",
-      "value": 40811.0,
-      "previous": 41867.0,
-      "change": -0.025222729118398738,
+      "value": 42322.0,
+      "previous": 40811.0,
+      "change": 0.03702433167528362,
       "change_type": "relative",
       "better": "higher"
     },
     "avg_basket": {
       "label": "Average basket",
       "format": "eur2",
-      "value": 7.774534316728333,
-      "previous": 7.793203955382521,
-      "change": -0.0023956307009381974,
+      "value": 7.711963045224706,
+      "previous": 7.7792815662443955,
+      "change": -0.008653565299885294,
       "change_type": "relative",
       "better": "higher"
     },
     "waste_pct": {
       "label": "Waste %",
       "format": "pct1",
-      "value": 0.052394536017477206,
-      "previous": 0.053763803371768136,
-      "change": -0.13692673542909303,
+      "value": 0.052242025309319616,
+      "previous": 0.052362562636177765,
+      "change": -0.01205373268581486,
       "change_type": "points",
       "better": "lower"
     },
     "labour_pct": {
       "label": "Labour % of revenue",
       "format": "pct1",
-      "value": 0.29104703219033695,
-      "previous": 0.2821059962748952,
-      "change": 0.8941035915441764,
+      "value": 0.2824725470509278,
+      "previous": 0.29086942287372447,
+      "change": -0.839687582279669,
       "change_type": "points",
       "better": "lower"
     },
     "revenue_per_labour_hour": {
       "label": "Revenue per labour hour",
       "format": "eur2",
-      "value": 68.24833727683374,
-      "previous": 70.40959646094088,
-      "change": -0.030695520110047468,
+      "value": 70.31901325002693,
+      "previous": 68.29001075500108,
+      "change": 0.029711556237780504,
       "change_type": "relative",
       "better": "higher"
     },
     "labour_hours": {
       "label": "Labour hours",
       "format": "hours",
-      "value": 4649.0,
-      "previous": 4634.0,
-      "change": 0.0032369443245576176,
+      "value": 4641.5,
+      "previous": 4649.0,
+      "change": -0.0016132501613250162,
       "change_type": "relative",
       "better": "neutral"
     }
@@ -1051,109 +1051,109 @@
       "rank": 1,
       "code": "CL-01",
       "name": "Alderbrook",
-      "revenue": 44478.020000000004,
-      "change": 0.021500933699847014,
-      "waste_pct": 0.04252145216895895,
-      "labour_pct": 0.2605961326515884
+      "revenue": 44794.56,
+      "change": 0.007116773633358535,
+      "waste_pct": 0.04472060893108449,
+      "labour_pct": 0.26493395626611804
     },
     {
       "rank": 2,
       "code": "CL-02",
       "name": "Brackenford",
-      "revenue": 35414.35,
-      "change": 0.02800229203870684,
-      "waste_pct": 0.05814450921730881,
-      "labour_pct": 0.27788452985865897
+      "revenue": 37250.45,
+      "change": 0.051846214881820465,
+      "waste_pct": 0.05075321237730014,
+      "labour_pct": 0.26394848921288205
     },
     {
       "rank": 3,
       "code": "CL-03",
       "name": "Corravale",
-      "revenue": 31829.96,
-      "change": 0.014326786355040892,
-      "waste_pct": 0.05628030949457681,
-      "labour_pct": 0.2839745950042036
+      "revenue": 33180.96,
+      "change": 0.04244428833715154,
+      "waste_pct": 0.05354335739532551,
+      "labour_pct": 0.27510656713970905
     },
     {
       "rank": 4,
       "code": "CL-09",
       "name": "Kilbrecan",
-      "revenue": 30875.51,
-      "change": -0.028316360490406596,
-      "waste_pct": 0.04825248230717485,
-      "labour_pct": 0.285345893881591
+      "revenue": 29509.49,
+      "change": -0.04424283194026583,
+      "waste_pct": 0.047199392466626834,
+      "labour_pct": 0.2900693980139948
     },
     {
       "rank": 5,
       "code": "CL-10",
       "name": "Lisnaferry",
-      "revenue": 27210.54,
-      "change": -0.05861485241719452,
-      "waste_pct": 0.0621130635408191,
-      "labour_pct": 0.27845827388945604
+      "revenue": 27832.33,
+      "change": 0.015619822888979493,
+      "waste_pct": 0.06555362055566313,
+      "labour_pct": 0.2654287298260692
     },
     {
       "rank": 6,
-      "code": "CL-05",
-      "name": "Elmshaw",
-      "revenue": 24477.28,
-      "change": -0.004807379555301193,
-      "waste_pct": 0.06308094690259702,
-      "labour_pct": 0.29984540765967466
+      "code": "CL-08",
+      "name": "Hollinmoor",
+      "revenue": 25940.27,
+      "change": 0.08719425075534916,
+      "waste_pct": 0.059190208891426344,
+      "labour_pct": 0.2883046321414542
     },
     {
       "rank": 7,
-      "code": "CL-08",
-      "name": "Hollinmoor",
-      "revenue": 23859.829999999998,
-      "change": -0.1230331507592471,
-      "waste_pct": 0.061883508809576604,
-      "labour_pct": 0.31381615040844807
+      "code": "CL-04",
+      "name": "Dunmarren",
+      "revenue": 24992.77,
+      "change": 0.060357749405709656,
+      "waste_pct": 0.053992014490590684,
+      "labour_pct": 0.3012431195101623
     },
     {
       "rank": 8,
       "code": "CL-06",
       "name": "Fernhollow",
-      "revenue": 23571.16,
-      "change": -0.03619035469066388,
-      "waste_pct": 0.047347690991873116,
-      "labour_pct": 0.2882505570366499
+      "revenue": 24294.31,
+      "change": 0.03067944046877631,
+      "waste_pct": 0.045672834503223174,
+      "labour_pct": 0.27555011852569594
     },
     {
       "rank": 9,
-      "code": "CL-04",
-      "name": "Dunmarren",
-      "revenue": 23570.13,
-      "change": -0.14249931149295617,
-      "waste_pct": 0.05144901619125563,
-      "labour_pct": 0.3148009790357541
+      "code": "CL-05",
+      "name": "Elmshaw",
+      "revenue": 23498.47,
+      "change": -0.03998851179542816,
+      "waste_pct": 0.06839807017222824,
+      "labour_pct": 0.31195648057086267
     },
     {
       "rank": 10,
       "code": "CL-11",
       "name": "Mosswick",
-      "revenue": 19973.12,
-      "change": -0.03302312926223987,
-      "waste_pct": 0.0526042000448603,
-      "labour_pct": 0.3411585170469111
+      "revenue": 21790.79,
+      "change": 0.09100581181107419,
+      "waste_pct": 0.0570690644992678,
+      "labour_pct": 0.3072077698881041
     },
     {
       "rank": 11,
       "code": "CL-07",
       "name": "Glenvarra",
-      "revenue": 16678.22,
-      "change": -0.01844611912321642,
-      "waste_pct": 0.038661799640489214,
-      "labour_pct": 0.3066574250729394
+      "revenue": 16865.68,
+      "change": 0.011239808564702894,
+      "waste_pct": 0.03953353793028209,
+      "labour_pct": 0.29678613610598564
     },
     {
       "rank": 12,
       "code": "CL-12",
       "name": "Rowanmere",
-      "revenue": 15348.4,
-      "change": 0.03472871101834657,
-      "waste_pct": 0.0428415991243387,
-      "labour_pct": 0.294330353652498
+      "revenue": 16435.62,
+      "change": 0.07083604805712644,
+      "waste_pct": 0.03962552066791518,
+      "labour_pct": 0.28519763781348073
     }
   ],
   "above_threshold": [
@@ -1166,7 +1166,6 @@
       "format": "pct1",
       "branches": [
         "CL-05",
-        "CL-08",
         "CL-10"
       ]
     },
@@ -1177,24 +1176,22 @@
       "value": 0.32,
       "style": "warn",
       "format": "pct1",
-      "branches": [
-        "CL-11"
-      ]
+      "branches": []
     }
   ],
   "outputs": [
     {
-      "file": "Cedarline_Weekly_Report_2026-W43.xlsx",
-      "bytes": 132048,
-      "sha256": "ec4878176639003b940bfb88825d9e2efd8420dba36cb45d2fa90d5df8509376"
+      "file": "Cedarline_Weekly_Report_2026-W44.xlsx",
+      "bytes": 132060,
+      "sha256": "5ed464ffb8554987d35025a489f13b27da768fd9968ac4e6e385855793d44105"
     },
     {
-      "file": "Cedarline_Weekly_Report_2026-W43.eml",
-      "bytes": 187192,
-      "sha256": "e3986a5b69cf24b034c1de58164c53d33cd18afa2ac6b94987bfaab34444fb87"
+      "file": "Cedarline_Weekly_Report_2026-W44.eml",
+      "bytes": 187191,
+      "sha256": "e6a40cf3ce624708477859232f573f99a8311abf99dc1c654f7f8435dac4d5c4"
     }
   ],
   "ci": {
-    "run_url": "https://github.com/HARISPAARTAN/excel-reporting-automation/actions/runs/40887020574"
+    "run_url": "https://github.com/HARISPAARTAN/excel-reporting-automation/actions/runs/41465405257"
   }
 }
